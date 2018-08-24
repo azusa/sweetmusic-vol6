@@ -1,0 +1,21 @@
+image: hiroyukionaka/pandoc-redpen-ja
+
+clone:
+  lfs: true
+
+pipelines:
+  default:
+      - step:
+          script:
+            - rm -rf target
+            - mkdir -p target
+            - bash ./build.sh
+            - bash ./deploy.sh master
+  branches:
+    release:
+      - step:
+          script:
+            - rm -rf target
+            - mkdir -p target
+            - bash ./build.sh
+            - bash ./deploy.sh release 

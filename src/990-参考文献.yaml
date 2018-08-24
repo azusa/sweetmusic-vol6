@@ -1,0 +1,64 @@
+\lhead[]{}
+\rhead[]{}
+\chead[参考文献]{参考文献}
+
+### 著者略歴
+
+大中浩行(\@setoazusa)
+
+TDD Boot Camp(TDDBC)を主催するコミュニティーTDD Base Campを中心として、TDDを始めとするアジャイル開発
+プラクティスの普及活動に従事。本職はインフラ構築・運用および、TDDや継続的デリバリーに関する技術支援など。
+
+[http://hiroyuki.fieldnotes.jp/](http://hiroyuki.fieldnotes.jp/)
+
+
+
+# 参考文献
+
+---
+fontsize: 16pt
+link-citations: true
+
+references:
+- id: Inoue2017
+  title: 'Mackerelサーバ監視[実践]入門'
+  author:
+  - family: 井上
+    given: 大輔
+  - family: 粕谷
+    given: 大輔
+  - family: 杉山
+    given: 広通
+  - family: 田中
+    given: 慎司
+  - family: 坪内
+    given: 佑樹
+  - family: 松木
+    given: 雅幸
+  issued:
+    year: 2017
+  publisher: 技術評論社
+- id: Allspaw2009
+  author:
+  - family: John
+    given: Allspaw
+  title: '10+ Deploys Per Day: Dev and Ops Cooperation at Flickr '
+  URL: https://www.slideshare.net/jallspaw/10-deploys-per-day-dev-and-ops-cooperation-at-flickr
+  issued:
+    year: 2009
+- id: Fowler2017
+  author:
+  - family: Fowler
+    given: Susan J.
+  title: 'Production-Ready Microservices(「プロダクションレディマイクロサービス　運用に強い本番対応システムの実装と標準化」オライリー・ジャパン)'    
+  issued:
+    year: 2017
+  publisher: O’Reilly Media, 
+  translator:
+  - given: 直生
+    family: 佐藤
+  - given: 高弘
+    family: 長尾
+    
+---
+

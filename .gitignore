@@ -1,0 +1,7 @@
+target
+techbookfest*
+*.aux
+*.out
+*.pdf
+src/tmp.md
+node_modules

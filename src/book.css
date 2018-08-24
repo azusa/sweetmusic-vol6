@@ -1,0 +1,34 @@
+@page {
+    size: B5;
+}
+
+h1 {
+    break-before: page;
+}
+
+h1,h2,h3 {
+    font-family: SourceHanSansJP;
+}
+
+code {
+    font-family: RictyDimished;
+}
+
+body {
+    font-family: SourceHanSerifJP;
+}
+
+@font-face {
+    font-family: SourceHanSerifJP;
+    src: url(SourceHanSerif-Regular.otf) format('opentype')
+}
+
+@font-face {
+    font-family: SourceHanSansJP;
+    src: url(SourceHanSans-Normal.otf) format('opentype')
+}
+
+@font-face {
+    font-family: RictyDimished;
+    src: url(RictyDiminished-Regular.ttf) format('truetype')
+}

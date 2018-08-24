@@ -1,0 +1,25 @@
+{
+  "name": "sweetmusic-vol5",
+  "version": "0.0.1",
+  "private": true,
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vvakame/review-css-typesetting.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "serve": "live-server --port=8989 --browser=chrome --open=vivliostyle-js-2018.7.0-pre.20180717120732/viewer/vivliostyle-viewer.html#x=../../target/sweetmusic-vol5.html --cors --verbose"
+  },
+  "dependencies": {
+    "http-server": "^0.11.1"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.0",
+    "vivliostyle": "^2017.6.0"
+  }
+}

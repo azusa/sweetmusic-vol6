@@ -1,0 +1,40 @@
+
+
+
+\usepackage{subfig}
+\AtBeginDocument{%
+\renewcommand*\figurename{図}
+\renewcommand*\tablename{表}
+}
+\AtBeginDocument{%
+\renewcommand*\listfigurename{List of Figures}
+\renewcommand*\listtablename{List of Tables}
+}
+\usepackage{float}
+\floatstyle{ruled}
+\makeatletter
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\makeatother
+\floatname{codelisting}{コード}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+
+
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+\usepackage{fancyhdr}
+
+\usepackage{fancyvrb}
+
+\hypersetup{unicode=true}
+
+\renewcommand{\headfont}{\bfseries}
+
+\setmainfont[BoldFont=b2.ttf]{f2.ttf}
+\setsansfont{f2.ttf}
+\setmainjfont[BoldFont=b2.ttf]{f2.ttf}
+\setsansjfont{f2.ttf}
+%\setmonofont{RictyDiminished-Regular.ttf}
+
+\makeatletter
+\newcommand{\verbatimfont}[1]{\renewcommand{\verbatim@font}{\ttfamily#1}}
+\makeatother
