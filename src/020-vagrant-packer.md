@@ -16,4 +16,9 @@ https://www.vagrantup.com/docs/boxes/base.html
 
 シェルで連携する
 
+<<<<<<< HEAD
 ## インストーラーをどこに配置するか
+=======
+## なぜChefなのか
+
+>>>>>>> f87f306576abf451a685f08411e82cb47a665eb5
