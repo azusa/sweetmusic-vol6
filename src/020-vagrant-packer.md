@@ -79,4 +79,11 @@ Packerによるビルド時に、OSのインストールイメージとなるiso
 
 ## Vagrantfile内でのイメージの指定
 
+```
+ config.vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
+```
+
+```
+ local.vm.box = "centos7.5-1804-1"
+```
 
