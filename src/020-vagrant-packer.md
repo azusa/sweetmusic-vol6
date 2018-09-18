@@ -1,6 +1,32 @@
 # VagrantとPackerによる開発環境
 
-## IaCにおける開発環境の必要性
+## Vagrantの基本的な使い方
+
+## vagrant up
+
+## vagrant halt
+
+## vagrant destroy
+
+## vagrant provision
+
+## Vagrantfile
+
+## バージョン管理からVagrantfileを取得して仮想マシンを作成するステップ
+
+### Windows10とVirtualboxとVagrantの微妙な関係
+
+VagrantのBoxには、動作するVirtualBoxのバージョンに応じたVBoxGuestAdditionsが仮想マシン上のゲストOSにインストールされている必要があります。
+
+ところで、マイクロソフト社のWindows10では「Windows as a Service」というコンセプトに基づき、数年ごとにWindowsの新しいバージョンをデリバリーするリリースサイクルから、年に２～3回、小規模な機能更新が提供されるリリースサイクルが採用されました。
+
+このリリースサイクルの変更により、VirtualBoxがWindows側の仕様変更の影響を受け、VirutalBoxのバージョンアップが必要になる場合があります。
+
+そしてVirtualBoxのバージョンがあがるということはVBoxGuestAdditionsの再インストールが必要となり、これまで使用していたBoxがそのままでは使用できなくなり…ということが、これまでのWindows10の機能リリースでは続いています。
+
+VirtualBoxのバージョンアップにVagrantのBoxを追従するには、vagrant-vbguestの`vagrant vbguest`コマンドでVBoxGuestAdditionsを更新するか、VBoxGuestAdditionsを更新したVagrantのBoxを作成するかのいずれかになります。
+
+VirtualBoxあげる→古いBoxのVboxguestAddition更新しようとする→kernel-develの新しいバージョン入れようとする→ない！
 
 # Vagrantのボックスの仕様
 
@@ -70,20 +96,72 @@ Packerによるビルド時に、OSのインストールイメージとなるiso
 
 ## プロビジョニングツールとの連携
 
-シェルで連携する
+Vagrantには、プロビジョニングの仕組みの中でChefやAnsibleなど、プロビジョニングツールと連携する仕組みがあり、Vagrantによる仮想マシンの起動時にプロビジョニングの処理を実行することができます。
+
+しかし、Vagrantによるプロビジョニング処理の実行は、実際にサーバーをセットアップする時と異なるインターフェースやパラメーターで処理を行う事になり、実機のセットアップ時に落としていた問題が発生しがちです。
+
+Vagrantによるプロビジョニングと、実機のプロビジョニングで、構成を揃えるためには、VagrantのShell Provisioner ^[[https://www.vagrantup.com/docs/provisioning/shell.html](https://www.vagrantup.com/docs/provisioning/shell.html)] の仕組みを使用し、Vagrantから実行するときの実機で実行するときで、同一のシェルスクリプトを実行するようにします。
+
+```
+curl -L https://www.opscode.com/chef/install.sh | bash
+set +e
+service systemctl stop jira
+set -e
+chef-client -z -c ${CURRENT}/solo.rb -j ${CURRENT}/nodes/${1}.json -N ${1}
+
+```
+
+```
+yum -y install ansible
+CURRENT=$(cd $(dirname $0) && pwd)
+cd $CURRENT && PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="default" --inventory-file=localhost -v provision/localhost.yml
+
+```
+
+なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにチェックアウトした環境上でシェルスクリプトの改行コードが`LF`になっている必要があります。
+
+Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定する必要があります。
+
+```
+* eol=lf
+```
 
 ## インストーラーをどこに配置するか
 
+`yum`や`apt`など、OSのパッケージ管理の仕組みでなく、`tar.gz`等の形式のアーカイブを展開する形式で提供されているパッケージソフトウェアをインストールする際には、Chefでは`remote_file`リソース、Ansibleでは`get_url`の仕組みを作ってリモートからアーカイブを取得します。
+
+しかし、商用ソフトウェアのインストーラーのように、パブリックからアクセス可能な場所にアーカイブが配置されない場合があります。
+
+この場合は、組織で管理するサーバー上にアーカイブを配置し、先述のリモートからアーカイブを取得する方法を取る場合もありますが、PackerでEC2等のパブリッククラウドのためのイメージを作成する場合は、組織内のサーバーでなくクラウド上でプロビジョニング処理が行われるため、ネットワークのアクセス許可のための設定が複雑になる場合があります。
+
+これらの事情に対応する方法として、Gitで大容量のファイルを扱う仕組みである`git-lfs`を用いてGitレポジトリー上にアーカイブを格納する方法があります。
+
+～は、Oracle JDKのインストーラーのRPMファイルを格納するために、拡張子が`rpm`のファイルを`git-lfs`の対象としてコミットする`.gitarttributes`の設定です。
+
+```
+*.rpm filter=lfs diff=lfs merge=lfs -text
+```
 
 ## なぜChefなのか
 
 ## Vagrantfile内でのイメージの指定
 
 ```
- config.vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
+ vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
 ```
 
 ```
- local.vm.box = "centos7.5-1804-1"
+ vm.box = "centos7.5-1804-1"
 ```
 
+Vagrantでは、`vm.box`で指定した名称のboxが存在しない場合、vm.box_urlに指定したURLからboxをダウンロードし、ローカルにインポートします。
+
+このため、リモートに配置されているboxが更新された場合は、`Vagrantfile`内の`vm.box`のbox名称も更新し、仮想マシンの作成時に、新しいboxをリモートからダウンロードするようにします。
+
+## vagrant-awsによる
+
+## ツールのビルドは /tmp の下で
+
+VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかし、WindowsでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクを使用できないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
+
+これを回避するためには、VagrantやPackerのプロビジョニング処理によるビルド処理の際に、ビルドを`/tmp`などのゲストOS内のディレクトリーで行うようにします。
