@@ -46,6 +46,8 @@ VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開�
 - rootのパスワードは `vagrant` であること
 - `vagrant` ユーザーがパスワードなしでsudoできること
 
+※他にもゼロクリアとかDHCPリースのクリアとか
+
 ## BoxCutterによるベースイメージの作成
 
 Vagrantのボックス作成はVirtualBox等の仮想マシンで手動でOSをセットアップした後、`vagrant package` コマンドで仮想マシンのイメージをエクスポートすることでも行えますが、OSのアップデートごとに手動の作業を繰り返すことになります。
@@ -89,7 +91,7 @@ packer build -only=virtualbox-iso -var-file=centos7.json centos.json
 
 # boxcutterのビルドの高速化
 
-Packerによるビルド時に、OSのインストールイメージとなるisoファイルを初回にダウンロードします。テンプレート内で指定されている`mirros.sonic.net`のエッジサーバーが日本国内に存在しないため、日本国内のネットワークからはダウンロードに時間がかかります。
+Packerによるビルド時に、OSのインストールイメージとなるisoファイルを初回にダウンロードします。テンプレート内で指定されている`mirros.sonic.net`のエッジサーバーが日本国内に存在しないため、日本国内のネットワークからはisoファイルのダウンロードに時間がかかります。
 
 ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`の項目を日本国内のミラーサイトのURLに修正します。
 
@@ -118,6 +120,10 @@ cd $CURRENT && PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --li
 
 ```
 
+## スクリプト実行時のカレントディレクトリー
+/tmp→/vagrant
+
+
 なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにチェックアウトした環境上でシェルスクリプトの改行コードが`LF`になっている必要があります。
 
 Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定する必要があります。
@@ -142,8 +148,6 @@ Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換�
 *.rpm filter=lfs diff=lfs merge=lfs -text
 ```
 
-## なぜChefなのか
-
 ## Vagrantfile内でのイメージの指定
 
 ```
@@ -160,8 +164,13 @@ Vagrantでは、`vm.box`で指定した名称のboxが存在しない場合、vm
 
 ## vagrant-awsによる
 
-## ツールのビルドは /tmp の下で
+
+## ツールのビルドは ゲストOSのディレクトリー内で
 
 VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかし、WindowsでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクを使用できないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
 
 これを回避するためには、VagrantやPackerのプロビジョニング処理によるビルド処理の際に、ビルドを`/tmp`などのゲストOS内のディレクトリーで行うようにします。
+
+
+
+## AMIイメージの指定時にはライセンスの同意が必要
