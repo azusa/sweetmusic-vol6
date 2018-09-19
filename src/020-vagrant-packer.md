@@ -162,10 +162,15 @@ Vagrantでは、`vm.box`で指定した名称のboxが存在しない場合、vm
 
 このため、リモートに配置されているboxが更新された場合は、`Vagrantfile`内の`vm.box`のbox名称も更新し、仮想マシンの作成時に、新しいboxをリモートからダウンロードするようにします。
 
-## vagrant-awsによる
+## vagrant-awsによるマルチVM
 
 
-## ツールのビルドは ゲストOSのディレクトリー内で
+## Windows環境にvagrant-awsをインストールするには
+
+https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794
+
+
+## ツールのビルドは ゲストOSのディレクトリー内で行う
 
 VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかし、WindowsでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクを使用できないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
 
