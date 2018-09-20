@@ -1,6 +1,6 @@
 # VagrantとPackerによる開発環境
 
-## Vagrantの基本的な使い方
+## バージョン管理からVagrantfileを取得して仮想マシンを作成するステップ
 
 ## vagrant up
 
@@ -11,8 +11,6 @@
 ## vagrant provision
 
 ## Vagrantfile
-
-## バージョン管理からVagrantfileを取得して仮想マシンを作成するステップ
 
 ### Windows10とVirtualboxとVagrantの微妙な関係
 
@@ -46,13 +44,13 @@ VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開�
 - rootのパスワードは `vagrant` であること
 - `vagrant` ユーザーがパスワードなしでsudoできること
 
-※他にもゼロクリアとかDHCPリースのクリアとか
+また、VMイメージのファイルサイズの縮小のため、仮想ハードディスクの領域をエクスポートする前に`/dev/zero`でクリアすることが望ましいです。他にも、RedHat 6 / CentOS 6 の場合は、ネットワークインターフェースのMacアドレスの情報が保存されないように、`/etc/udev/rules.d/70-persistent-net.rules`をディレクトリーにしておくなどの手順が必要になります。
+
+Vagrantのボックス作成はVirtualBox等の仮想マシンで手動でOSをセットアップした後、`vagrant package` コマンドで仮想マシンのイメージをエクスポートすることでも行えますが、`vagrant package`コマンドを使用した場合はOSのアップデートごとに手動の作業を繰り返すことになります。
 
 ## BoxCutterによるベースイメージの作成
 
-Vagrantのボックス作成はVirtualBox等の仮想マシンで手動でOSをセットアップした後、`vagrant package` コマンドで仮想マシンのイメージをエクスポートすることでも行えますが、OSのアップデートごとに手動の作業を繰り返すことになります。
-
-この本で取り上げるPackerを使用して、OSセットアップの手順をスクリプト化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
+この本で取り上げるPackerを使用して、Vagnrantなどの仮想環境でのOSセットアップの手順をスクリプト化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
 
 ## Packer
 
@@ -66,9 +64,9 @@ Packerはgoで開発されており、単一バイナリーで提供されてい
 
 パスワード強度チェックツールのcracklib ^[[https://github.com/cracklib/cracklib](https://github.com/cracklib/cracklib)] のRPMパッケージには、`/usr/sbin/packer` という `cracklib-packer` コマンドへのシンボリックリンクが存在します。環境変数`PATH`の参照順序によっては、`packer` コマンドの呼び出し時にcracklibのコマンドが呼び出されることがあります。
 
-対処としては、`packer`コマンドの`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。。
+対処としては、`packer`コマンドの`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。
 
-## Boxcutterの
+## Boxcutterの設定ファイル
 
 Packerは、構成のテンプレートをjson形式で記述します。boxcutterでは、`centos.json`です。
 
@@ -89,9 +87,9 @@ BoxcutterではJSON形式のファイルでユーザー変数を定義する方�
 packer build -only=virtualbox-iso -var-file=centos7.json centos.json
 ```
 
-# boxcutterのビルドの高速化
+## boxcutterのビルドの高速化
 
-Packerによるビルド時に、OSのインストールイメージとなるisoファイルを初回にダウンロードします。テンプレート内で指定されている`mirros.sonic.net`のエッジサーバーが日本国内に存在しないため、日本国内のネットワークからはisoファイルのダウンロードに時間がかかります。
+Packerはよるビルド時に、OSのインストールイメージとなるisoファイルを初回のビルドにダウンロードします。テンプレート内で指定されている`mirros.sonic.net`のエッジサーバーは日本国内に存在しないため、デフォルトの指定ではisoファイルのダウンロードに時間がかかります。
 
 ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`の項目を日本国内のミラーサイトのURLに修正します。
 
@@ -113,15 +111,21 @@ chef-client -z -c ${CURRENT}/solo.rb -j ${CURRENT}/nodes/${1}.json -N ${1}
 
 ```
 
+VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。通所Ansibleのplaybook等は`/vagrant`配下にマウントされていますので、シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限りカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
+
+```
+cd /vagrant
+bash provisioning.sh
+```
+
 ```
 yum -y install ansible
+
 CURRENT=$(cd $(dirname $0) && pwd)
-cd $CURRENT && PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="default" --inventory-file=localhost -v provision/localhost.yml
+cd $CURRENT
 
+PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="default" --inventory-file=localhost -v provision/localhost.yml
 ```
-
-## スクリプト実行時のカレントディレクトリー
-/tmp→/vagrant
 
 
 なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにチェックアウトした環境上でシェルスクリプトの改行コードが`LF`になっている必要があります。
@@ -164,18 +168,48 @@ Vagrantでは、`vm.box`で指定した名称のboxが存在しない場合、vm
 
 ## vagrant-awsによるマルチVM
 
+Vagrantでは、単一のVagrantfileで複数のVM定義を指定することができます。
+
+これとAmazon EC2上でVagrantの仮想マシンを起動するプラグインであるvagrant-awsを使って、ローカル環境のVMとパブリッククラウド上の環境を
+切り替えて使用することができます。
+
+アクセスキー/リージョン/インスタンスタイプ/AMIID/セキュリティーグループ/キーペア/パブリックIPの指定/サブネットID
+
+primary: true / autostart: false の指定
+
+ブロックの指定の方法
+
+EC2インスタンスに接続するためのssh設定
+
+Windows環境では
+
+override.nfs.functional
+
+ダミーboxの指定
+
+
+
+## AMIイメージの指定時にはライセンスの同意が必要
+
+AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供されているイメージについては、CLIからの起動するの前に、WebインターフェースからライセンスをSubscribeする必要があります。
+
+Vagrantfile内で指定するAMIのIdは、Subscribeした後の「Configure this software」の画面上で取得することができます。
 
 ## Windows環境にvagrant-awsをインストールするには
 
-https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794
+この章の執筆時点で(2018/9/20)、Windows環境でvagrant-awsをインストールするには、libxml2の依存関係の導入に失敗する問題があります。
+
+これはGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に以下のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。
+
+> vagrant plugin install --plugin-version 1.0.1 fog-ovirt
 
 
 ## ツールのビルドは ゲストOSのディレクトリー内で行う
 
-VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかし、WindowsでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクを使用できないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
+VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかしでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクを使用できないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
 
 これを回避するためには、VagrantやPackerのプロビジョニング処理によるビルド処理の際に、ビルドを`/tmp`などのゲストOS内のディレクトリーで行うようにします。
 
 
 
-## AMIイメージの指定時にはライセンスの同意が必要
+
