@@ -2,29 +2,36 @@
 
 ## バージョン管理からVagrantfileを取得して仮想マシンを作成するステップ
 
-## vagrant up
+```
+git clone https://github.com/azusa/techbookfest6-vagrant
+cd techbookfest6-vagrant
+vagrant up
+```
 
-## vagrant halt
+仮想マシンの作成後に、AnsibleのPlaybook等でのVMの構成が
+変更になった場合は、`git pull`コマンドで変更内容を取得し、
+`vagrant provision`コマンドでプロビジョニング処理を実行します。
 
-## vagrant destroy
+```
+git pull origin master
+vagrant provision
+```
 
-## vagrant provision
+VMの再起動は`vagrant reload`コマンド、終了は`vagrant halt`コマンドで行います。
+```
+# 再起動
+vagrant reload
+# 終了
+vagrant halt
+```
+
+VMを破棄する場合は`vagrant destroy`コマンドを実行します。
+
+```
+vagrant destroy
+```
 
 ## Vagrantfile
-
-### Windows10とVirtualboxとVagrantの微妙な関係
-
-VagrantのBoxには、動作するVirtualBoxのバージョンに応じたVBoxGuestAdditionsが仮想マシン上のゲストOSにインストールされている必要があります。
-
-ところで、マイクロソフト社のWindows10では「Windows as a Service」というコンセプトに基づき、数年ごとにWindowsの新しいバージョンをデリバリーするリリースサイクルから、年に２～3回、小規模な機能更新が提供されるリリースサイクルが採用されました。
-
-このリリースサイクルの変更により、VirtualBoxがWindows側の仕様変更の影響を受け、VirutalBoxのバージョンアップが必要になる場合があります。
-
-そしてVirtualBoxのバージョンがあがるということはVBoxGuestAdditionsの再インストールが必要となり、これまで使用していたBoxがそのままでは使用できなくなり…ということが、これまでのWindows10の機能リリースでは続いています。
-
-VirtualBoxのバージョンアップにVagrantのBoxを追従するには、vagrant-vbguestの`vagrant vbguest`コマンドでVBoxGuestAdditionsを更新するか、VBoxGuestAdditionsを更新したVagrantのBoxを作成するかのいずれかになります。
-
-VirtualBoxあげる→古いBoxのVboxguestAddition更新しようとする→kernel-develの新しいバージョン入れようとする→ない！
 
 # Vagrantのボックスの仕様
 
@@ -48,9 +55,27 @@ VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開�
 
 Vagrantのボックス作成はVirtualBox等の仮想マシンで手動でOSをセットアップした後、`vagrant package` コマンドで仮想マシンのイメージをエクスポートすることでも行えますが、`vagrant package`コマンドを使用した場合はOSのアップデートごとに手動の作業を繰り返すことになります。
 
+### Windows10とVirtualboxとVagrantの微妙な関係
+
+VagrantのBoxには、動作するVirtualBoxのバージョンに応じたVBoxGuestAdditionsが仮想マシン上のゲストOSにインストールされている必要があります。
+
+ところで、マイクロソフト社のWindows10では「Windows as a Service」というコンセプトに基づき、数年ごとにWindowsの新しいバージョンをデリバリーするリリースサイクルから、年に２～3回、小規模な機能更新が提供されるリリースサイクルが採用されました。
+
+このリリースサイクルの変更により、VirtualBoxがWindows側の仕様変更の影響を受け、VirutalBoxのバージョンアップが必要になる場合があります。
+
+そしてVirtualBoxのバージョンがあがるということはVBoxGuestAdditionsの再インストールが必要となり、これまで使用していたBoxがそのままでは使用できなくなり…ということが、これまでのWindows10の機能リリースでは続いています。
+
+VirtualBoxのバージョンアップにVagrantのBoxを追従するには、vagrant-vbguestの`vagrant vbguest`コマンドでVBoxGuestAdditionsを更新するか、VBoxGuestAdditionsを更新したVagrantのBoxを作成するかのいずれかになります。
+
+また、VirutalBoxのバージョンアップ時に、ゲストOSのパッケージの更新が行われていない状態だと、
+VboxguestAdditionのビルド時に必要な、Linux Kernelの開発者向けのパッケージ ^[RPMだとkernel-devel]がインストールできず、VboxguestAdditionの更新に失敗する場合があります。
+
+これらの問題を踏まえて、開発の現場でVagrantを用いたローカル開発環境の運用を継続的に行うためには、
+この本で取り上げるPackerを使用して、ボックスの更新とその配付の仕組みを作り込む必要があります。
+
 ## BoxCutterによるベースイメージの作成
 
-この本で取り上げるPackerを使用して、Vagnrantなどの仮想環境でのOSセットアップの手順をスクリプト化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
+Packerを使用して、Vagnrantなどの仮想環境でのOSセットアップの手順をスクリプト化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
 
 ## Packer
 
@@ -59,12 +84,6 @@ Packerは複数プラットフォームの仮想マシンのイメージ構築�
 ## Packerの導入
 
 Packerはgoで開発されており、単一バイナリーで提供されています。Packerを導入するには、[https://www.packer.io/downloads.html](https://www.packer.io/downloads.html) から、プラットフォームにあわせたアーカイブをダウンロードし、展開した中にあるファイルを環境変数`PATH`の通ったディレクトリーに配置し、パーミッションを適切に設定します。
-
-### /usr/sbin/packer
-
-パスワード強度チェックツールのcracklib ^[[https://github.com/cracklib/cracklib](https://github.com/cracklib/cracklib)] のRPMパッケージには、`/usr/sbin/packer` という `cracklib-packer` コマンドへのシンボリックリンクが存在します。環境変数`PATH`の参照順序によっては、`packer` コマンドの呼び出し時にcracklibのコマンドが呼び出されることがあります。
-
-対処としては、`packer`コマンドの`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。
 
 ## Boxcutterの設定ファイル
 
@@ -89,12 +108,22 @@ packer build -only=virtualbox-iso -var-file=centos7.json centos.json
 
 ## boxcutterのビルドの高速化
 
-Packerはよるビルド時に、OSのインストールイメージとなるisoファイルを初回のビルドにダウンロードします。テンプレート内で指定されている`mirros.sonic.net`のエッジサーバーは日本国内に存在しないため、デフォルトの指定ではisoファイルのダウンロードに時間がかかります。
+Packerはビルド時に、OSのインストールイメージとなるisoファイルを初回のビルドにダウンロードします。テンプレート内で指定されている`mirros.sonic.net`は日本国内にエッジサーバーが存在しないため、デフォルトの指定ではisoファイルのダウンロードに時間がかかります。
 
-ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`の項目を日本国内のミラーサイトのURLに修正します。
+ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`ならびに`iso_checksum`の項目を日本国内のミラーサイトのURLならびにチェックサムに修正します。
+
+```
+{
+ (略)
+  "iso_checksum": "506e4e06abf778c3435b4e5745df13e79ebfc86565d7ea1e128067ef6b5a6345",
+  "iso_checksum_type": "sha256",
+  "iso_url": "http://ftp.riken.jp/Linux/centos/7.5.1804/isos/x86_64/CentOS-7-x86_64-DVD-1804.iso",
+ (略)
+} 
+```
 
 
-## プロビジョニングツールとの連携
+## Vagrantとプロビジョニングツールとの連携
 
 Vagrantには、プロビジョニングの仕組みの中でChefやAnsibleなど、プロビジョニングツールと連携する仕組みがあり、Vagrantによる仮想マシンの起動時にプロビジョニングの処理を実行することができます。
 
@@ -136,33 +165,18 @@ Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換�
 * eol=lf
 ```
 
-## インストーラーをどこに配置するか
-
-`yum`や`apt`など、OSのパッケージ管理の仕組みでなく、`tar.gz`等の形式のアーカイブを展開する形式で提供されているパッケージソフトウェアをインストールする際には、Chefでは`remote_file`リソース、Ansibleでは`get_url`の仕組みを作ってリモートからアーカイブを取得します。
-
-しかし、商用ソフトウェアのインストーラーのように、パブリックからアクセス可能な場所にアーカイブが配置されない場合があります。
-
-この場合は、組織で管理するサーバー上にアーカイブを配置し、先述のリモートからアーカイブを取得する方法を取る場合もありますが、PackerでEC2等のパブリッククラウドのためのイメージを作成する場合は、組織内のサーバーでなくクラウド上でプロビジョニング処理が行われるため、ネットワークのアクセス許可のための設定が複雑になる場合があります。
-
-これらの事情に対応する方法として、Gitで大容量のファイルを扱う仕組みである`git-lfs`を用いてGitレポジトリー上にアーカイブを格納する方法があります。
-
-～は、Oracle JDKのインストーラーのRPMファイルを格納するために、拡張子が`rpm`のファイルを`git-lfs`の対象としてコミットする`.gitarttributes`の設定です。
-
-```
-*.rpm filter=lfs diff=lfs merge=lfs -text
-```
 
 ## Vagrantfile内でのイメージの指定
 
-```
- vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
-```
+Packerで作成したボックスを開発チームに配布するには、ボックスのファイルをhttpでアクセス可能な場所に
+配置し、そのURLをVagrantfileの`vm.box_url`に指定します。
 
 ```
+ vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
  vm.box = "centos7.5-1804-1"
 ```
 
-Vagrantでは、`vm.box`で指定した名称のboxが存在しない場合、vm.box_urlに指定したURLからboxをダウンロードし、ローカルにインポートします。
+Vagrantでは、`vagrant up`の実行時に`vm.box`で指定した名称のboxが存在しない場合、vm.box_urlに指定したURLからboxをダウンロードし、ローカルにインポートします。
 
 このため、リモートに配置されているboxが更新された場合は、`Vagrantfile`内の`vm.box`のbox名称も更新し、仮想マシンの作成時に、新しいboxをリモートからダウンロードするようにします。
 
@@ -173,27 +187,36 @@ Vagrantでは、単一のVagrantfileで複数のVM定義を指定することが
 これとAmazon EC2上でVagrantの仮想マシンを起動するプラグインであるvagrant-awsを使って、ローカル環境のVMとパブリッククラウド上の環境を
 切り替えて使用することができます。
 
-アクセスキー/リージョン/インスタンスタイプ/AMIID/セキュリティーグループ/キーペア/パブリックIPの指定/サブネットID
-
-primary: true / autostart: false の指定
+vagrant-awsを使用してEC2上に仮想マシンを作成するには、VagrantfileでVMのproviderにawsを指定するとともに、`vagrant up`コマンドでVMを作成する際に`--provider aws`を指定します。
 
 ブロックの指定の方法
 
-EC2インスタンスに接続するためのssh設定
+VagrantfileでawsのVMを定義する際に、指定が必要な項目は以下の通りです。
 
-Windows環境では
+- アクセスキー
+- リージョン
+- インスタンスタイプ
+- AMIID
+- セキュリティーグループ
+- キーペア
+- パブリックIPの指定
+- サブネットID
 
-override.nfs.functional
+また、Vagrantの実行時にEC2インスタンスにsshおよびrsync接続するために、以下の設定が必要です。
 
-ダミーboxの指定
+- ssh接続のユーザー名
+- 秘密鍵のパス
+- `/vagrant`ディレクトリーのrsyncの設定
 
+Vagrantfileのグローバルの設定として、Vagrantのboxのbox_urlを定義している場合は、
+awsのVM定義では、中身が空のボックスである [https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box](https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box)を指定して上書きします。
 
+VMを複数定義した場合、vagrantでは `up`/`halt`/`provision`/`destroy`のコマンドの後ろにVMの名称を
+付けて操作対象を区別します。VMの名称のオプションを付与しないで`vagrant up`等のコマンドを実行した時の
+動作のために、ローカルのVM定義に`primary: true`のオプションを、またAWS上でのVM定義に `autostart: false`オプションを指定します。
 
-## AMIイメージの指定時にはライセンスの同意が必要
-
-AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供されているイメージについては、CLIからの起動するの前に、WebインターフェースからライセンスをSubscribeする必要があります。
-
-Vagrantfile内で指定するAMIのIdは、Subscribeした後の「Configure this software」の画面上で取得することができます。
+vagrant-awsでVMをプロビジョニングする場合は、リソースの転送にrsyncのコマンドを使用します。
+Windows環境ででrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、展開します。^[[http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz)]
 
 ## Windows環境にvagrant-awsをインストールするには
 
@@ -202,7 +225,14 @@ Vagrantfile内で指定するAMIのIdは、Subscribeした後の「Configure thi
 これはGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に以下のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。
 
 > vagrant plugin install --plugin-version 1.0.1 fog-ovirt
+> vagrant plugin install vagrant-aws
+> vagrant up --provider aws
 
+## AMIイメージの指定時にはライセンスの同意が必要
+
+AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供されているイメージについては、CLIからの起動するの前に、WebインターフェースからライセンスをSubscribeする必要があります。
+
+またVagrantfile内で指定するAMIのIdは、Subscribeした後の「Configure this software」の画面上で取得することができます。
 
 ## ツールのビルドは ゲストOSのディレクトリー内で行う
 
