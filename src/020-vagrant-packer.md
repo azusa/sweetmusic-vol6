@@ -68,14 +68,14 @@ VagrantのBoxには、動作するVirtualBoxのバージョンに応じたVBoxGu
 VirtualBoxのバージョンアップにVagrantのBoxを追従するには、vagrant-vbguestの`vagrant vbguest`コマンドでVBoxGuestAdditionsを更新するか、VBoxGuestAdditionsを更新したVagrantのBoxを作成するかのいずれかになります。
 
 また、VirutalBoxのバージョンアップ時に、ゲストOSのパッケージの更新が行われていない状態だと、
-VboxguestAdditionのビルド時に必要な、Linux Kernelの開発者向けのパッケージ ^[RPMだとkernel-devel]がインストールできず、VboxguestAdditionの更新に失敗する場合があります。
+VboxguestAdditionのビルド時に必要な、Linux Kernelの開発者向けのパッケージ ^[RPMだとkernel-devel]がインストールできず、VboxguestAdditionの更新に失敗する場合があります。この場合はVboxguestAdditionの更新の前に、ゲストOSのシステムを更新する必要があります。
 
 これらの問題を踏まえて、開発の現場でVagrantを用いたローカル開発環境の運用を継続的に行うためには、
 この本で取り上げるPackerを使用して、ボックスの更新とその配付の仕組みを作り込む必要があります。
 
 ## BoxCutterによるベースイメージの作成
 
-Packerを使用して、Vagnrantなどの仮想環境でのOSセットアップの手順をスクリプト化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
+Packerを使用して、Vagnrantなどの仮想環境でのOSをセットアップする手順をテンプレート化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
 
 ## Packer
 
@@ -83,7 +83,13 @@ Packerは複数プラットフォームの仮想マシンのイメージ構築�
 
 ## Packerの導入
 
-Packerはgoで開発されており、単一バイナリーで提供されています。Packerを導入するには、[https://www.packer.io/downloads.html](https://www.packer.io/downloads.html) から、プラットフォームにあわせたアーカイブをダウンロードし、展開した中にあるファイルを環境変数`PATH`の通ったディレクトリーに配置し、パーミッションを適切に設定します。
+PackerはGoで開発されており、単一バイナリーで提供されています。Packerを導入するには、[https://www.packer.io/downloads.html](https://www.packer.io/downloads.html) から、プラットフォームにあわせたアーカイブをダウンロードし、展開した中にあるファイルを環境変数`PATH`の通ったディレクトリーに配置し、パーミッションを適切に設定します。
+
+## /usr/sbin/packerとのpackerコマンドの衝突
+
+パスワード強度チェックツールのcracklib ^[[https://github.com/cracklib/cracklib](https://github.com/cracklib/cracklib)] のRPMパッケージには、`/usr/sbin/packer` という `cracklib-packer` コマンドへのシンボリックリンクが存在します。環境変数`PATH`の参照順序によっては、`packer` コマンドの呼び出し時にcracklibの`packer`コマンドが呼び出されることがあります。
+
+対処としては、`packer`コマンドの`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。
 
 ## Boxcutterの設定ファイル
 
@@ -134,13 +140,13 @@ Vagrantによるプロビジョニングと、実機のプロビジョニング�
 ```
 curl -L https://www.opscode.com/chef/install.sh | bash
 set +e
-service systemctl stop jira
+systemctl stop jira
 set -e
 chef-client -z -c ${CURRENT}/solo.rb -j ${CURRENT}/nodes/${1}.json -N ${1}
 
 ```
 
-VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。通所Ansibleのplaybook等は`/vagrant`配下にマウントされていますので、シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限りカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
+VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。デフォルトだとAnsibleのplaybookを格納したワークスペースはゲストOSの`/vagrant`配下にマウントされています。シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限りカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
 
 ```
 cd /vagrant
@@ -193,13 +199,14 @@ vagrant-awsを使用してEC2上に仮想マシンを作成するには、Vagran
 
 VagrantfileでawsのVMを定義する際に、指定が必要な項目は以下の通りです。
 
-- アクセスキー
+- アクセスキー ID
+- シークレットアクセスキー
 - リージョン
 - インスタンスタイプ
 - AMIID
 - セキュリティーグループ
 - キーペア
-- パブリックIPの指定
+- パブリックIPを割り振る指定
 - サブネットID
 
 また、Vagrantの実行時にEC2インスタンスにsshおよびrsync接続するために、以下の設定が必要です。
@@ -216,13 +223,13 @@ VMを複数定義した場合、vagrantでは `up`/`halt`/`provision`/`destroy`�
 動作のために、ローカルのVM定義に`primary: true`のオプションを、またAWS上でのVM定義に `autostart: false`オプションを指定します。
 
 vagrant-awsでVMをプロビジョニングする場合は、リソースの転送にrsyncのコマンドを使用します。
-Windows環境ででrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、展開します。^[[http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz)]
+Windows環境ででrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、環境変数`PATH`の通っているディレクトリーに展開します。^[[http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz)]
 
 ## Windows環境にvagrant-awsをインストールするには
 
-この章の執筆時点で(2018/9/20)、Windows環境でvagrant-awsをインストールするには、libxml2の依存関係の導入に失敗する問題があります。
+この章の執筆時点で(2018/9/20)、Windows環境でvagrant-awsをインストールするには、libxml2の依存関係の導入に失敗してインストールが出来ない問題があります。
 
-これはGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に以下のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。
+この問題はGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に以下のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。
 
 > vagrant plugin install --plugin-version 1.0.1 fog-ovirt
 > vagrant plugin install vagrant-aws
@@ -236,7 +243,7 @@ AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供�
 
 ## ツールのビルドは ゲストOSのディレクトリー内で行う
 
-VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかしでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクを使用できないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
+VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかしでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクの設定やパーミッションに変更をできないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
 
 これを回避するためには、VagrantやPackerのプロビジョニング処理によるビルド処理の際に、ビルドを`/tmp`などのゲストOS内のディレクトリーで行うようにします。
 

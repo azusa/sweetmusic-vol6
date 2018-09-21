@@ -1,6 +1,12 @@
 
+# Packerによるアプリケーションイメージ作成
+
+例題はJiraです！
 
 
+## Packerによるアプリケーションイメージのビルド
+
+## builderの指定
 
 ## プロビジョニングツールとの連携
 
@@ -15,9 +21,9 @@
 
 OSのベースイメージからアプリケーションの基本設定ずみイメージ、環境ごとのカスタムイメージと、イメージの構築にあたってパイプラインを構築するには、前の段のパイプラインで作成したイメージのIDを引き渡す必要があります。
 
-ビルドの出力からイメージのIDを取得するには、`packer`を`-machine-readable`オプションを付けて実行し、出力されたログからgrepすることで、イメージのIDを取り出します。
+ビルドの出力からイメージのIDを取得するには、`packer`を`-machine-readable`オプションを付けて実行し、出力されたログから作成した出力部分からgrepすることで、イメージのIDを取り出します。
 
-そして取り出したファイルをCIサーバーのartifact(この場合`jira.version`)とすることで、後続の処理でイメージのIDを取得可能にします。
+そして取り出したファイルをCIサーバーのartifact(この場合`jira.version`というファイル)とすることで、後続の処理でイメージのIDを取得可能にします。
 
 ```
 /usr/local/bin/packer build -machine-readable jira-ami.json |tee jira-build.log
@@ -27,6 +33,31 @@ exit $RET
 ```
 
 後続のテンプレートは環境変数で受け取る
+
+```
+export SOURCE_AMI=$(<jira/jira.version)
+export TARGET_NODE="software-seminar"
+
+(cd jira && /usr/local/bin/packer build jira-custom.json)
+```
+
+```
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "ap-northeast-1",
+    "source_ami": "{{user `source_ami`}}",
+    "instance_type": "t2.medium",
+    "ssh_username": "centos",
+    "ami_name": "jira-7.12.0-base {{timestamp}}"
+  }],
+
+  "variables": {
+    (略)
+    "source_ami": "{{env `SOURCE_AMI`}}"
+  }
+```
 
 
 ## インストーラーをどこに配置するか
