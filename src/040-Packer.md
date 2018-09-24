@@ -3,19 +3,126 @@
 
 例題はJiraです！
 
+## Packerの説明
+
+Builder
+
+Provisioner
 
 ## Packerによるアプリケーションイメージのビルド
 
 ## builderの指定
 
-## プロビジョニングツールとの連携
+## ワークスペースの転送
 
-ワークスペースの転送
+この機能を使い、プロビジョニング処理を対象ホスト上で実行するには、テンプレートファイルが存在するワークスペース以下のファイルを対象ホストに転送する必要があります。
 
-プロビジョニング処理の実行
+Packerでは、プロビジョニング処理の先頭にfileプロビジョナーを使用してリソースの転送を行う事ができます。
 
+
+```
+  "provisioners": [
+    {
+      "type": "file",
+      "source": ".",
+      "destination": "/tmp/"
+    },
+    (以下略)
+```
+
+## プロビジョニング処理の実行
+
+PackerにもAnsibleをはじめとするプロビジョニングツールとの連携機能があります
+。この書籍では前章で述べたとおり、Vagrant上でプロビジョニング処理を実行する場合とのインターフェースの統一のために、シェルスクリプトを介してPackerとプロビジョニングツールとの連携を行います。
+
+プロビジョニング処理は、Vagrantで処理を行うシェルスクリプトと同一の処理を
+呼び出すことにより行います。Packerではshellプロビジョナーでスクリプトを
+呼び出し、スクリプトの中でツールのセットアップとプロビジョニング処理の呼び出しを行います。
+
+プロビジョング処理を行う`provisioning-packer.sh`の後に`spec.sh`を呼び出していますが、これは次の章でのべるServerspecによるサーバー構成のテストを行うものです。
+
+```
+    {
+      "environment_vars": [
+        "SSH_USERNAME={{user `ssh_username`}}",
+        "SSH_PASSWORD={{user `ssh_password`}}",
+        "http_proxy={{user `http_proxy`}}",
+        "https_proxy={{user `https_proxy`}}",
+        "ftp_proxy={{user `ftp_proxy`}}",
+        "rsync_proxy={{user `rsync_proxy`}}",
+        "no_proxy={{user `no_proxy`}}",
+        "TARGET_NODE={{user `target_node`}}"
+      ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "provisioning-packer.sh",
+        "spec.sh"
+      ],
+      "type": "shell",
+      "pause_before": "10s"
+    }
+  ],
+
+```
+
+```
+#!/bin/bash
+
+bash /tmp/provisioning.sh ${TARGET_NODE}
+```
+
+```
+set -eux
+
+
+CURRENT=$(cd $(dirname $0) && pwd)
+cd $CURRENT
+
+curl -L https://www.opscode.com/chef/install.sh | bash
+
+set +e
+service systemctl stop jira
+while `ps aux |grep java |grep jira |grep -v grep >/dev/null`; do
+        sleep 1
+done
+set -e
+
+chef-client -z -c ${CURRENT}/solo.rb -j ${CURRENT}/nodes/${1}.json -N ${1}
+
+DATE=$(date "+%Y%m%d-%H%M%S")
+
+mkdir -p /var/local/backup/chef/${DATE}
+
+rsync -a ${CURRENT}/local-mode-cache/backup/ /var/local/backup/chef/${DATE}/
+```
 
 ## 環境ごとのイメージだし分け
+
+Herokuの創設者であり、現在はInk & Switch社のCEOであるAdam Wiggins氏が
+記したThe Twelve-Factor Appというドキュメントがあります。このドキュメントは、可搬性とスケーラビリティーに優れたWebアプリケーションのための方法論についてまとめたものです。この中で「設定を環境変数に格納する」という節があります。
+
+設定を環境変数に格納するということは、アプリケーションのソースコードやミドルウェアの設定ファイル中から環境依存の要素を排除し、ステージング環境や本番環境などのシステムのステージ、顧客ごとの設定の際に関わりなく、単一のアプリケーションのパッケージを、あらゆる環境で動作させることを目指しています。
+
+しかし、アーキテクチャーとして可搬性を意識したミドルウェアやフレームワークの場合はいいのですが、Javaで記述されたアプリケーションのように、設定ファイルをXMLファイルやプロパティファイル形式で記述しているものや、ネットワーク通信の動作のために`hosts`にエントリーを追加する必要があるものなど、環境変数だけでの設定が不可能なアプリケーションやミドルウェアというものはどうしても存在します。
+
+## ユーザデータをシンプルに保つ
+
+ec2には、ユーザーデータを使って、起動時に実行するスクリプトを指定できます。このスクリプト内で、サーバーのプロビジョニングを行う事ができます。サーバーの構成に環境ごとに差分がある場合は、ユーザーデータの処理内で、設定ファイルの差し替えなど、環境のカスタマイズを行う事が可能です。
+
+しかしユーザーデータのスクリプトには、プロビジョニングツールなど、他のサーバー構築の仕組みでカバーしきれない処理が集中しがちであり、肥大化しがちです。また、ユーザーデータのスクリプトのデバッグを確実に行うためにはec2のインスタンスを作成する必要があり、ユーザデータが肥大化すると、スクリプトのデバッグが難しくなってきます。
+
+ユーザーデータをどのようにシンプルに保つかと言うことを考えると、
+ユーザーデータの中ではEBSのマウント設定やホスト名の設定など、
+必要最小限の処理に留めるべきであり、環境ごとにイメージの構成が異なる場合は、
+Packerによるプロビジョニング処理内で環境のカスタマイズを行っておくことが
+望ましいです。
+
+## イメージ作成時のカスタマイズのステージ分割
+
+環境変数のみで設定が不可能なアプリケーションの存在や、ユーザーデータのスクリプトのシンプルさを保つことを考えると、環境ごとにカスタマイズが必要なアプリケーションのカスタマイズの方法は、以下の通り、デフォルトの構成のイメージ作成と、カスタマイズしたイメージの作成でステージを分割する、というものになります。
+
+- デフォルト設定で構成したアプリケーションのイメージを構成し、Serverspecを用いてテストを行う。
+- テストを行ったデフォルト設定のイメージに対してカスタマイズを行い、環境ごとにイメージを
 
 ## 作成したAMIイメージの取得と引き渡し
 
@@ -32,11 +139,12 @@ grep 'artifact,0,id' jira/jira-build.log | cut -d, -f6 | cut -d: -f2 jira.versio
 exit $RET
 ```
 
-後続のテンプレートは環境変数で受け取る
+後続の処理は、artifactとして取得したファイルを読み込んでイメージのIDを
+環境変数として設定し、テンプレート内でユーザー変数として取得します。
 
 ```
 export SOURCE_AMI=$(<jira/jira.version)
-export TARGET_NODE="software-seminar"
+export TARGET_NODE="production"
 
 (cd jira && /usr/local/bin/packer build jira-custom.json)
 ```
@@ -59,7 +167,6 @@ export TARGET_NODE="software-seminar"
   }
 ```
 
-
 ## インストーラーをどこに配置するか
 
 `yum`や`apt`など、OSのパッケージ管理の仕組みでなく、`tar.gz`等の形式のアーカイブを展開する形式で提供されているパッケージソフトウェアをインストールする際には、Chefでは`remote_file`リソース、Ansibleでは`get_url`の仕組みを作ってリモートからアーカイブを取得します。
@@ -74,29 +181,6 @@ export TARGET_NODE="software-seminar"
 
 ```
 *.rpm filter=lfs diff=lfs merge=lfs -text
-```
-
-
-## ユーザデータはシンプルに保つ
-
-ec2には、ユーザーデータを使って、起動時に実行するスクリプトを指定できます。このスクリプト内で、サーバーのプロビジョニングを行う事ができます。
-
-しかしユーザーデータのスクリプトには、プロビジョニングツールなど、他のサーバー構築の仕組みでカバーしきれない処理が集中しがちであり、肥大化しがちです。また、ユーザーデータのスクリプトのデバッグを確実に行うためにはec2のインスタンを作成する必要がある、ユーザデータが肥大化すると、スクリプトのデバッグが難しくなってきます。
-
-## Chefの二段構え
-
-```
-set -ux
-
-export SOURCE_AMI="ami-c0394c2d"
-export TARGET_NODE="software-local"
-
-set +e
-
-(cd jira && /usr/local/bin/packer build -machine-readable jira-ami.json |tee jira-build.log)
-RET=$?
-grep 'artifact,0,id' jira/jira-build.log | cut -d, -f6 | cut -d: -f2 > jira/jira.version
-exit $RET
 ```
 
 ## AMIイメージからのインスタンス作成
