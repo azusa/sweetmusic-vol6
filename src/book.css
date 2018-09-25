@@ -1,5 +1,8 @@
 @page {
     size: B5;
+    @bottom-center {
+        content: counter(page);
+    }
 }
 
 h1 {
@@ -10,8 +13,24 @@ h1,h2,h3 {
     font-family: SourceHanSansJP;
 }
 
-code {
+p {
+    font-size: 12px;
+}
+
+p li {
+    font-size: 12px;
+}
+
+
+
+p code {
     font-family: RictyDimished;
+    font-size: 12px;
+}
+
+pre code {
+    font-family: RictyDimished;
+    font-size: 11px;
 }
 
 body {
@@ -31,4 +50,14 @@ body {
 @font-face {
     font-family: RictyDimished;
     src: url(RictyDiminished-Regular.ttf) format('truetype')
+}
+
+#TOC a::after {
+    content: target-counter(attr(href), page);
+    float: right;
+}
+
+#TOC li {
+    font-family: SourceHanSansJP;
+    font: size 18px;
 }

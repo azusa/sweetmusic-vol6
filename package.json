@@ -13,7 +13,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "serve": "live-server --port=8989 --browser=chrome --open=vivliostyle-js-2018.7.0-pre.20180717120732/viewer/vivliostyle-viewer.html#x=../../target/sweetmusic-vol5.html --cors --verbose"
+    "serve": "live-server --port=8989 --browser=chrome --open=vivliostyle-js-2018.8.100/viewer/vivliostyle-viewer.html#x=../../target/sweetmusic-vol5.html --cors --verbose"
   },
   "dependencies": {
     "http-server": "^0.11.1"

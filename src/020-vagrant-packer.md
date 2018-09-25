@@ -1,39 +1,56 @@
 # VagrantとPackerによる開発環境
 
+## Vagrantfile
+
+Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置します。`Vagrantfile`の文法はRubyスクリプトです。Vagrantfileの配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
+
+## .vagrant
+
+`Vagrantfile`の配下に出来る`.vagrant`ディレクトリーは、環境ごとの仮想マシンの情報が含まれるので、バージョン管理に格納する場合は[@lst:code_020_code010]のように`.gitignore`に含めてバージョン管理から除外します。
+
+```{#lst:code_020_code010 caption=".gitignore"}
+.vagrant
+```
+
+
 ## バージョン管理からVagrantfileを取得して仮想マシンを作成するステップ
 
-```
-git clone https://github.com/azusa/techbookfest6-vagrant
-cd techbookfest6-vagrant
+バージョン管理からVagrantfileを含まれるレポジトリーを取得し、`vagrant up`コマンドで仮想マシンを作成します。([@lst:code_020_code020])
+
+
+```{#lst:code_020_code020 caption="vagrant up"}
+git clone https://github.com/azusa/techbookfest5-vagrant
+cd techbookfest5-vagrant
 vagrant up
 ```
 
 仮想マシンの作成後に、AnsibleのPlaybook等でのVMの構成が
 変更になった場合は、`git pull`コマンドで変更内容を取得し、
-`vagrant provision`コマンドでプロビジョニング処理を実行します。
+`vagrant provision`コマンドでプロビジョニング処理を実行します。([@lst:code_020_code030])
 
-```
+```{#lst:code_020_code030 caption="vagrant provision"}
 git pull origin master
 vagrant provision
 ```
 
-VMの再起動は`vagrant reload`コマンド、終了は`vagrant halt`コマンドで行います。
-```
+VMの再起動は`vagrant reload`コマンド、終了は`vagrant halt`コマンドで行います。([@lst:code_020_code040])
+
+```{#lst:code_020_code040 caption="vagrant reload / vagrant halt"}
 # 再起動
 vagrant reload
 # 終了
 vagrant halt
 ```
 
-VMを破棄する場合は`vagrant destroy`コマンドを実行します。
+VMを破棄する場合は`vagrant destroy`コマンドを実行します。([@lst:code_020_code050])
 
-```
+```{#lst:code_020_code050 caption="vagrant reload / vagrant halt"}
 vagrant destroy
 ```
 
-## Vagrantfile
 
-# Vagrantのボックスの仕様
+
+## Vagrantのボックスの仕様
 
 Vagrantでは、Vagrantbox.es ^[[https://www.vagrantbox.es/](https://www.vagrantbox.es/)] でボックスが公開されていますが、ボックスの構成の仕様は明文化されていないものもあります。
 
@@ -45,7 +62,7 @@ VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開�
 
 - [https://www.vagrantup.com/docs/boxes/base.html]https://www.vagrantup.com/docs/boxes/base.html
 
-主な仕様は、以下の通りです。
+主な仕様は、次の通りです。
 
 - ユーザー: `vagrant`がパスワード`vagrant`でログインできること
 - rootのパスワードは `vagrant` であること
@@ -106,9 +123,9 @@ Packerでは、テンプレートをビルドする際に、パラメーター�
 
 の二通りの方法があります。
 
-BoxcutterではJSON形式のファイルでユーザー変数を定義する方法を採用しており、そのファイルは `centos7.json`ないし`centos6.json`となります。
+BoxcutterではJSON形式のファイルでユーザー変数を定義する方法を採用しており、そのファイルは `centos7.json`ないし`centos6.json`となります。([@lst:code_020_code060])
 
-```
+```{#lst:code_020_code060 caption="packer build"}
 packer build -only=virtualbox-iso -var-file=centos7.json centos.json
 ```
 
@@ -116,9 +133,10 @@ packer build -only=virtualbox-iso -var-file=centos7.json centos.json
 
 Packerはビルド時に、OSのインストールイメージとなるisoファイルを初回のビルドにダウンロードします。テンプレート内で指定されている`mirros.sonic.net`は日本国内にエッジサーバーが存在しないため、デフォルトの指定ではisoファイルのダウンロードに時間がかかります。
 
-ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`ならびに`iso_checksum`の項目を日本国内のミラーサイトのURLならびにチェックサムに修正します。
+ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`ならびに`iso_checksum`の項目を日本国内のミラーサイトのURLならびにチェックサムに修正します。([@lst:code_020_code070])
 
-```
+
+```{#lst:code_020_code070 caption="centos7.jsonの修正例"}
 {
  (略)
   "iso_checksum": "506e4e06abf778c3435b4e5745df13e79ebfc86565d7ea1e128067ef6b5a6345",
@@ -138,14 +156,14 @@ Vagrantには、プロビジョニングの仕組みの中でChefやAnsibleな�
 Vagrantによるプロビジョニングと、実機のプロビジョニングで、構成を揃えるためには、VagrantのShell Provisioner ^[[https://www.vagrantup.com/docs/provisioning/shell.html](https://www.vagrantup.com/docs/provisioning/shell.html)] の仕組みを使用し、Vagrantから実行するときの実機で実行するときで、同一のシェルスクリプトを実行するようにします。
 
 
-VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。デフォルトだとAnsibleのplaybookを格納したワークスペースはゲストOSの`/vagrant`配下にマウントされています。シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限りカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
+VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。デフォルトだとAnsibleのplaybookを格納したワークスペースはゲストOSの`/vagrant`配下にマウントされています。シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限り[@lst:code_020_code080]の`provisioning-vagrant.sh`の処理内でカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、[@lst:code_020_code090]の`provisioning.sh`の処理内で、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
 
-```
+```{#lst:code_020_code080 caption="provisioning-vagrant.sh"}
 cd /vagrant
 bash provisioning.sh
 ```
 
-```
+```{#lst:code_020_code090 caption="provisioning.sh"}
 yum -y install ansible
 
 CURRENT=$(cd $(dirname $0) && pwd)
@@ -157,9 +175,9 @@ PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="default" -
 
 なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにチェックアウトした環境上でシェルスクリプトの改行コードが`LF`になっている必要があります。
 
-Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定します。
+Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、[@lst:code_020_code100]の`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定します。
 
-```
+```{#lst:code_020_code100 caption=".gitattributes"}
 * eol=lf
 ```
 
@@ -167,9 +185,9 @@ Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換�
 ## Vagrantfile内でのイメージの指定
 
 Packerで作成したボックスを開発チームに配布するには、ボックスのファイルをhttpでアクセス可能な場所に
-配置し、そのURLをVagrantfileの`vm.box_url`に指定します。
+配置し、そのURLをVagrantfileの`vm.box_url`に指定します。([@lst:code_020_code110] )
 
-```
+```{#lst:code_020_code110 caption="vm.box_urlの指定"}
  vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
  vm.box = "centos7.5-1804-1"
 ```
@@ -221,11 +239,13 @@ Windows環境ででrsyncを使用するには、msys2のレポジトリーから
 
 この章の執筆時点で(2018/9/20)、Windows環境でvagrant-awsをインストールするには、libxml2の依存関係の導入に失敗してインストールが出来ない問題があります。
 
-この問題はGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に以下のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。
+この問題はGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に[@lst:code_020_code120]のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。()
 
+```{#lst:code_020_code120 caption="Windows環境でのvagrant-awsのインストール"}
 > vagrant plugin install --plugin-version 1.0.1 fog-ovirt
 > vagrant plugin install vagrant-aws
 > vagrant up --provider aws
+```
 
 ## AMIイメージの指定時にはライセンスの同意が必要
 

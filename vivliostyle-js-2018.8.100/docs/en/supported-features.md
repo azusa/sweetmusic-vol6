@@ -1,4 +1,4 @@
-# Features supported by Vivliostyle
+# Features supported by Vivliostyle 2018.8.100
 
 The Vivliostyle uses a two-layer architecture, with some of its functionality implemented purely in javascript, and some being delegated all or in part to the browser engine on top of which Vivliostyle is running. In the following list <quote>Supported in all browsers</quote> indicates that features implemented in Javascript that will work regardless of the browser engine. Other features' availability and behavior do vary based on what is supported by the underlying browser engine.
 
@@ -154,6 +154,10 @@ Properties where <quote>Allowed prefixes</quote> is indicated may be used with a
 - [@page](https://drafts.csswg.org/css-page/#at-page-rule)
   - Supported in all browsers
 - [Page-margin boxes (@top-left-corner, @top-left, @top-center, @top-right, @top-right-corner, @left-top, @left-middle, @left-bottom, @right-top, @right-middle, @right-bottom, @bottom-left-corner, @bottom-left, @bottom-center, @bottom-right, @bottom-right-coner)](https://drafts.csswg.org/css-page/#margin-at-rules)
+  - Supported in all browsers
+- Page selectors [:left, :right](http://dev.w3.org/csswg/css-page/#spread-pseudos), [:first](http://dev.w3.org/csswg/css-page/#first-pseudo), [:recto, :verso](http://dev.w3.org/csswg/css-logical-props/#logical-page)
+  - Supported in all browsers
+- [Page-based counters (page, pages)](https://drafts.csswg.org/css-page/#page-based-counters)
   - Supported in all browsers
 
 ### [CSS Fonts 3](https://www.w3.org/TR/css-fonts-3/)
