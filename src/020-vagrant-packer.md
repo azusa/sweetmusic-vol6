@@ -73,7 +73,7 @@ VboxguestAdditionのビルド時に必要な、Linux Kernelの開発者向けの
 これらの問題を踏まえて、開発の現場でVagrantを用いたローカル開発環境の運用を継続的に行うためには、
 この本で取り上げるPackerを使用して、ボックスの更新とその配付の仕組みを作り込む必要があります。
 
-## BoxCutterによるベースイメージの作成
+## PackerとBoxCutterによるベースイメージの作成
 
 Packerを使用して、Vagnrantなどの仮想環境でのOSをセットアップする手順をテンプレート化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
 
@@ -137,14 +137,6 @@ Vagrantには、プロビジョニングの仕組みの中でChefやAnsibleな�
 
 Vagrantによるプロビジョニングと、実機のプロビジョニングで、構成を揃えるためには、VagrantのShell Provisioner ^[[https://www.vagrantup.com/docs/provisioning/shell.html](https://www.vagrantup.com/docs/provisioning/shell.html)] の仕組みを使用し、Vagrantから実行するときの実機で実行するときで、同一のシェルスクリプトを実行するようにします。
 
-```
-curl -L https://www.opscode.com/chef/install.sh | bash
-set +e
-systemctl stop jira
-set -e
-chef-client -z -c ${CURRENT}/solo.rb -j ${CURRENT}/nodes/${1}.json -N ${1}
-
-```
 
 VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。デフォルトだとAnsibleのplaybookを格納したワークスペースはゲストOSの`/vagrant`配下にマウントされています。シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限りカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
 
@@ -165,7 +157,7 @@ PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="default" -
 
 なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにチェックアウトした環境上でシェルスクリプトの改行コードが`LF`になっている必要があります。
 
-Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定する必要があります。
+Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定します。
 
 ```
 * eol=lf

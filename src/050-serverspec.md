@@ -161,12 +161,12 @@ exit $RET
 
 サンプルコード内でサーバーのプロビジョニングを行う際に、SELinuxの無効化をおこなっていますが、`/etc/selinux/config`の設定を反映するにはOSの再起動が必要です。
 
-このため、サンプルコード内のspec内で`getenforce`コマンドの結果を確認している箇所はpendingにしています。
+このため、Packerによるイメージのビルド時にSeverspecを実行する場合は、OSの再起動後に設定される反映をテストすることができません。そのため、サンプルコード内のspec内で`getenforce`コマンドの結果を確認している箇所は`pending`にしています。
 
 ```
 describe command("getenforce") do
     pending("it fails before reboot.")
-     its(:stdout) { should contain "Disabled" }
+    its(:stdout) { should contain "Disabled" }
 end
 ```
 
