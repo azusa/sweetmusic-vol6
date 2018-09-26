@@ -3,7 +3,7 @@
 
 例題はJiraです！
 
-## Packerの説明
+## Packerの要素
 
 Builder
 
@@ -17,10 +17,9 @@ Provisioner
 
 この機能を使い、プロビジョニング処理を対象ホスト上で実行するには、テンプレートファイルが存在するワークスペース以下のファイルを対象ホストに転送する必要があります。
 
-Packerでは、プロビジョニング処理の先頭にfileプロビジョナーを使用してリソースの転送を行う事ができます。
+Packerでは、プロビジョニング処理の先頭にfileプロビジョナーを使用してリソースの転送を行う事ができます。([@lst:code_040_code010])
 
-
-```
+```{#lst:code_040_code010 caption="fileプロビジョナー"}
   "provisioners": [
     {
       "type": "file",
@@ -39,9 +38,9 @@ PackerにもAnsibleをはじめとするプロビジョニングツールとの�
 呼び出すことにより行います。Packerではshellプロビジョナーでスクリプトを
 呼び出し、スクリプトの中でツールのセットアップとプロビジョニング処理の呼び出しを行います。
 
-プロビジョング処理を行う`provisioning-packer.sh`の後に`spec.sh`を呼び出していますが、これは次の章でのべるServerspecによるサーバー構成のテストを行うものです。
+[@lst:code_040_code020])ではプロビジョング処理を行う`provisioning-packer.sh`の後に`spec.sh`を呼び出していますが、これは次の章でのべるServerspecによるサーバー構成のテストを行うものです。
 
-```
+```{#lst:code_040_code020 caption="Packerでのプロビジョニング処理"}
     {
       "environment_vars": [
         "SSH_USERNAME={{user `ssh_username`}}",
@@ -65,13 +64,13 @@ PackerにもAnsibleをはじめとするプロビジョニングツールとの�
 
 ```
 
-```
+```{#lst:code_040_code030 caption="provisioning-packer.sh"}
 #!/bin/bash
 
 bash /tmp/provisioning.sh ${TARGET_NODE}
 ```
 
-```
+```{#lst:code_040_code040 caption="provisioning.sh"}
 set -eux
 
 
@@ -128,28 +127,28 @@ Packerによるプロビジョニング処理内で環境のカスタマイズ�
 
 OSのベースイメージからアプリケーションの基本設定ずみイメージ、環境ごとのカスタムイメージと、イメージの構築にあたってパイプラインを構築するには、前の段のパイプラインで作成したイメージのIDを引き渡す必要があります。
 
-ビルドの出力からイメージのIDを取得するには、`packer`を`-machine-readable`オプションを付けて実行し、出力されたログから作成した出力部分からgrepすることで、イメージのIDを取り出します。
+ビルドの出力からイメージのIDを取得するには、[@lst:code_040_code050]のように`packer`を`-machine-readable`オプションを付けて実行し、出力されたログから作成した出力部分からgrepすることで、イメージのIDを取り出します。
 
 そして取り出したファイルをCIサーバーのartifact(この場合`jira.version`というファイル)とすることで、後続の処理でイメージのIDを取得可能にします。
 
-```
+```{#lst:code_040_code050 caption="PackerでのイメージのID取り出し"}
 /usr/local/bin/packer build -machine-readable jira-ami.json |tee jira-build.log
 RET=$?
 grep 'artifact,0,id' jira/jira-build.log | cut -d, -f6 | cut -d: -f2 jira.version
 exit $RET
 ```
 
-後続の処理は、artifactとして取得したファイルを読み込んでイメージのIDを
-環境変数として設定し、テンプレート内でユーザー変数として取得します。
+後続の処理は、[@lst:code_040_code060]のようにartifactとして取得したファイルを読み込んでイメージのIDを
+環境変数として設定し、[@lst:code_040_code070]のようにテンプレート内でユーザー変数として取得します。
 
-```
+```{#lst:code_040_code060 caption="PackerでのイメージのID取りこみ"}
 export SOURCE_AMI=$(<jira/jira.version)
 export TARGET_NODE="production"
 
-(cd jira && /usr/local/bin/packer build jira-custom.json)
+/usr/local/bin/packer build jira-custom.json
 ```
 
-```
+```{#lst:code_040_code070 caption="PackerでのイメージのID取りこみ"}
   "builders": [{
     "type": "amazon-ebs",
     "access_key": "{{user `aws_access_key`}}",
@@ -177,9 +176,9 @@ export TARGET_NODE="production"
 
 これらの事情に対応する方法として、Gitで大容量のファイルを扱う仕組みである`git-lfs`を用いてGitレポジトリー上にアーカイブを格納する方法があります。
 
-～は、Oracle JDKのインストーラーのRPMファイルを格納するために、拡張子が`rpm`のファイルを`git-lfs`の対象としてコミットする`.gitarttributes`の設定です。
+[@lst:code_040_code080]は、Oracle JDKのインストーラーのRPMファイルを格納するために、拡張子が`rpm`のファイルを`git-lfs`の対象としてコミットする`.gitarttributes`の設定です。
 
-```
+```{#lst:code_040_code080 caption=".gitattributes"}
 *.rpm filter=lfs diff=lfs merge=lfs -text
 ```
 

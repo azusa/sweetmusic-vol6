@@ -5,6 +5,24 @@
     }
 }
 
+div#cover h1 {
+    break-before: unset;
+}
+
+
+div#cover {
+    break-after:  page;
+}
+
+div#footnote {
+    break-before: page;
+}
+
+div#footnote h1 {
+    break-before: unset;
+}
+
+
 h1 {
     break-before: page;
 }
@@ -14,13 +32,19 @@ h1,h2,h3 {
 }
 
 p {
+    font-family: SourceHanSerifJP;
     font-size: 12px;
 }
 
-p li {
+li {
+    font-family: SourceHanSerifJP;
     font-size: 12px;
 }
 
+li code {
+    font-family: RictyDimished;
+    font-size: 11px;
+}
 
 
 p code {
@@ -33,8 +57,27 @@ pre code {
     font-size: 11px;
 }
 
-body {
-    font-family: SourceHanSerifJP;
+div.listing p {
+    font-family: SourceHanSansJP;
+    font-size: 11px;
+    margin: 0; 
+    padding: 0;
+}
+
+div.listing {
+    margin: 0 0 0 1em;
+    padding: 0.5em 1em;
+    border-left: solid 2px #000000;
+}
+
+#TOC a::after {
+    content: target-counter(attr(href), page);
+    float: right;
+}
+
+#TOC ul li {
+    font-family: SourceHanSansJP;
+    font-size: 14px;
 }
 
 @font-face {
@@ -52,12 +95,4 @@ body {
     src: url(RictyDiminished-Regular.ttf) format('truetype')
 }
 
-#TOC a::after {
-    content: target-counter(attr(href), page);
-    float: right;
-}
 
-#TOC li {
-    font-family: SourceHanSansJP;
-    font: size 18px;
-}

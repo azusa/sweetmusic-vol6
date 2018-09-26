@@ -20,7 +20,15 @@ cat -n src/tmp.md
 
 cd src
 
-pandoc -V fontsize:12pt -V papersize:b5 -V documentclass=ltjsarticle -s -f markdown+raw_tex+citations+yaml_metadata_block+fenced_code_blocks -c book.css --filter pandoc-crossref -M "crossrefYaml=${PWD}/../crossref_config.yaml" --filter pandoc-citeproc -o ../target/${OUTPUT}.html --toc --toc-depth=1 --reference-location=block -S tmp.md  --verbose
+pandoc  \
+  -s -f markdown+raw_tex+citations+yaml_metadata_block+fenced_code_blocks \
+  -c book.css --filter pandoc-crossref \
+  -M "crossrefYaml=${PWD}/../crossref_config.yaml" \
+  --filter pandoc-citeproc -o ../target/${OUTPUT}.html \
+  --toc --toc-depth=2 --reference-location=block \
+  -B cover.html -A imprint.html \
+  -S tmp.md  --verbose
+
 # cat epub.yaml >> tmp.md
 # pandoc -V fontsize:12pt -V papersize:b5 -s -f markdown+raw_tex+citations+yaml_metadata_block+fenced_code_blocks+ignore_line_breaks --filter pandoc-crossref -M "crossrefYaml=${PWD}/../crossref_config.yaml" --filter pandoc-citeproc -t epub3 -o ../target/${OUTPUT}.epub --latex-engine=lualatex   --toc --toc-depth=2 -S  tmp.md  --verbose
 

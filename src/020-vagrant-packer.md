@@ -1,8 +1,8 @@
-# VagrantとPackerによる開発環境
+# VagrantとPackerによるインフラ開発環境の構築
 
-## Vagrantfile
+## VagrantとVagrantfile
 
-Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置します。`Vagrantfile`の文法はRubyスクリプトです。Vagrantfileの配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
+Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置します。`Vagrantfile`の文法はRubyスクリプトです。通常インフラ自動化においてVagrantを使用する場合は、Vagrantfileの配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
 
 ## .vagrant
 

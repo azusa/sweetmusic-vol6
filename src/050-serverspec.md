@@ -4,9 +4,9 @@
 
 Serverspecは、宮下剛輔(mizzy)氏が中心となって開発を進めている、サーバー構成をテストするソフトウェアです。オープンソース(MIT License)で公開されており、で提供されています。
 
-Serverspecは、RSpecのDSLの構文を生かし、宣言的にサーバーの構成をテストすることができます。以下は、サービスとしてJiraのプロセスが起動していることを確認するServerspecの記述です。
+Serverspecは、RSpecのDSLの構文を生かし、宣言的にサーバーの構成をテストすることができます。[@lst:code_050_code010]は、サービスとしてJiraのプロセスが起動していることを確認するServerspecの記述です。
 
-```
+```{#lst:code_050_code010 caption="Serverspec"}
 describe service("jira") do
   it { should be_enabled }
   it { should be_running }
@@ -40,9 +40,9 @@ Serverspecをsshで接続する場合、対象となるホストにRubyのラン
 
 Packerによるプロビジョニングに使用しているツールが、Rubyで記述されているChefないしitamaeの場合は、ominibusインストーラー内のRubyランタイムを使用することで、追加でRubyをインストールすることなくServerspecを実行することができます。
 
-以下は、Packerでのビルド時にPackerのShellプロビジョナーから呼び出される、シェルスクリプトの実装です。
+[@lst:code_050_code020]は、Packerでのビルド時にPackerのShellプロビジョナーから呼び出される、シェルスクリプト(`spec.sh`)の実装です。
 
-```
+```{#lst:code_050_code020 caption="spec.sh"}
 set -x
 
 export PATH=/opt/chef/embedded/bin:$PATH
@@ -65,13 +65,14 @@ exit $RET
 
 ## Packer上でServerspecを実行するためのspec_helper.rbの設定
 
-Serverspecを実行する際に、開発環境のVagrant上での実行と、Packerでのビルド時の自ホスト上での実行を切り替えられるようにするには、`serverspec-init`コマンドが生成する`spec/spec_helper.rb`に、実行時の環境変数によって` set :backend, :exec`を設定するロジックを追加します。
+Serverspecを実行する際に、開発環境のVagrant上での実行と、Packerでのビルド時の自ホスト上での実行を切り替えられるようにするには、[@lst:code_050_code030]のように、`serverspec-init`コマンドが生成する`spec/spec_helper.rb`に、実行時の環境変数によって` set :backend, :exec`を設定するロジックを追加します。
 
-```
+```{#lst:code_050_code030 caption="spec/spec_helper.rb"}
 require 'serverspec'
 require 'net/ssh'
 require 'tempfile'
 
+# この部分を追加
 if ENV['BACKEND_LOCAL']
   set :backend, :exec
   return
@@ -121,21 +122,21 @@ set :ssh_options, options
 ## Vagrant上でのServerspecの実行
 
 Vagrant上で動作している仮想マシンに対してServerspecを実行するには、
-Vagrantを実行しているホスト上でServerspecを実行します。
+[@lst:code_050_code040]のように、Vagrantを実行しているホスト上でServerspecを実行します。
 
 
-```
+```{#lst:code_050_code040 caption="ホスト上でのServerspecの実行(ホスト上)"}
 bundle install
 bundle exec rake spec:default
 ```
 
 ## Packer上でのServerspecの実行
 
-Packer上でServerspecを実行するには、前述の`BACKEND_LOCAL`環境変数を設定した上で、Chefの組み込みRubyに`PATH`を通した上で実行します。
+Packer上でServerspecを実行するには、[@lst:code_050_code050]のように、前述の`BACKEND_LOCAL`環境変数を設定した上で、Chefの組み込みRubyに`PATH`を通した上で実行します。
 
 `bundle install`を実行する際に`sudo`しているのは、`root`ユーザーでは直接`bundle`コマンドを実行できないためです。
 
-```
+```{#lst:code_050_code050 caption="Packer上でのServerspecの実行"}
 set -x
 
 export BACKEND_LOCAL="local"
@@ -157,16 +158,18 @@ rm -rf /tmp/*
 exit $RET
 ```
 
-## SELinux
+## SELinuxとServerspec
 
 サンプルコード内でサーバーのプロビジョニングを行う際に、SELinuxの無効化をおこなっていますが、`/etc/selinux/config`の設定を反映するにはOSの再起動が必要です。
 
-このため、Packerによるイメージのビルド時にSeverspecを実行する場合は、OSの再起動後に設定される反映をテストすることができません。そのため、サンプルコード内のspec内で`getenforce`コマンドの結果を確認している箇所は`pending`にしています。
+このため、Packerによるイメージのビルド時にSeverspecを実行する場合は、OSの再起動後に設定される反映をテストすることができません。そのため、[@lst:code_050_code060]のように、`spec/default/base_spec.rb`内で`getenforce`コマンドの結果を確認している箇所は`pending`にしています。
 
-```
+```{#lst:code_050_code060 caption="base_spec.rb"}
 describe command("getenforce") do
-    pending("it fails before reboot.")
-    its(:stdout) { should contain "Disabled" }
+     its(:stdout) {
+         pending "it fails before reboot."
+         should contain "Disabled" 
+     }
 end
 ```
 
