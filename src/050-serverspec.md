@@ -23,8 +23,8 @@ end
 
 また、Serverspecは、テストを実行する際のホストへの接続方法として、以下の二通りの方法があります。
 
-- Serverspecの実行時に、sshで対象ホストに接続する
-- 自ホスト(backend)上で実行する
+- Serverspecの実行時に、`ssh`で対象ホストに接続する
+- 自ホスト上で実行する(`exec`)
 
 ここでは、CIを行う上でのプロセスと構成の単純化のために、Packerのビルド時にビルド処理内でServerspecを実行し、対象ホストには直接(exec)で接続するものとします。
 
@@ -67,7 +67,7 @@ exit $RET
 
 Serverspecを実行する際に、開発環境のVagrant上での実行と、Packerでのビルド時の自ホスト上での実行を切り替えられるようにするには、[@lst:code_050_code030]のように、`serverspec-init`コマンドが生成する`spec/spec_helper.rb`に、実行時の環境変数によって` set :backend, :exec`を設定するロジックを追加します。
 
-```{#lst:code_050_code030 caption="spec/spec_helper.rb"}
+```{#lst:code_050_code030 caption="spec_helper.rb"}
 require 'serverspec'
 require 'net/ssh'
 require 'tempfile'
@@ -162,7 +162,8 @@ exit $RET
 
 サンプルコード内でサーバーのプロビジョニングを行う際に、SELinuxの無効化をおこなっていますが、`/etc/selinux/config`の設定を反映するにはOSの再起動が必要です。
 
-このため、Packerによるイメージのビルド時にSeverspecを実行する場合は、OSの再起動後に設定される反映をテストすることができません。そのため、[@lst:code_050_code060]のように、`spec/default/base_spec.rb`内で`getenforce`コマンドの結果を確認している箇所は`pending`にしています。
+このため、Packerによるイメージのビルド時にSeverspecを実行する場合は、OSの再起動後に設定される反映を
+Serverspecでテストすることができません。そのため、[@lst:code_050_code060]のように、`spec/default/base_spec.rb`内で`getenforce`コマンドの結果を確認している箇所は`pending`にしています。
 
 ```{#lst:code_050_code060 caption="base_spec.rb"}
 describe command("getenforce") do
@@ -172,7 +173,4 @@ describe command("getenforce") do
      }
 end
 ```
-
-
-
 

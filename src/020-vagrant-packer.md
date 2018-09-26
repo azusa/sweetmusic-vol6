@@ -2,20 +2,22 @@
 
 ## VagrantとVagrantfile
 
-Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置します。`Vagrantfile`の文法はRubyスクリプトです。通常インフラ自動化においてVagrantを使用する場合は、Vagrantfileの配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
+Vagrantは、開発環境の用途として仮想マシンを構築し、管理するためのミドルウェアです。 
+Mitchell Hashimoto氏がオープンソース(MIT License)で開発し、彼とArmon Dadgar氏が
+創立したHashiCorp社によってサポートが行われています
 
-## .vagrant
-
-`Vagrantfile`の配下に出来る`.vagrant`ディレクトリーは、環境ごとの仮想マシンの情報が含まれるので、バージョン管理に格納する場合は[@lst:code_020_code010]のように`.gitignore`に含めてバージョン管理から除外します。
-
-```{#lst:code_020_code010 caption=".gitignore"}
-.vagrant
-```
+Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置します。`Vagrantfile`はRubyの文法で
+記述する設定ファイルです。通常インフラ自動化においてVagrantを使用する場合は、Vagrantfileの配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
 
 
-## バージョン管理からVagrantfileを取得して仮想マシンを作成するステップ
 
-バージョン管理からVagrantfileを含まれるレポジトリーを取得し、`vagrant up`コマンドで仮想マシンを作成します。([@lst:code_020_code020])
+## バージョン管理からVagrantfileを取得して仮想マシンを作成する
+
+以下に本書のサンプルコード[[https://github.com/azusa/techbookfest5-vagrant](https://github.com/azusa/techbookfest5-vagrant)]から`Vagrantfile`を取得し、
+仮想マシンを構築する手順を示します。なお本章ではこの後、このサンプルコードに
+従って説明を進めます。
+
+バージョン管理から`Vagrantfile`が含まれるレポジトリーを取得し、`vagrant up`コマンドで仮想マシンを作成します。([@lst:code_020_code020])
 
 
 ```{#lst:code_020_code020 caption="vagrant up"}
@@ -48,11 +50,16 @@ VMを破棄する場合は`vagrant destroy`コマンドを実行します。([@l
 vagrant destroy
 ```
 
+## .vagrant
 
+`Vagrantfile`の配下に出来る`.vagrant`ディレクトリーは、環境ごとの仮想マシンの情報が含まれるので、バージョン管理に格納する場合は[@lst:code_020_code010]のように`.gitignore`に含めてバージョン管理から除外します。
 
+```{#lst:code_020_code010 caption=".gitignore"}
+.vagrant
+```
 ## Vagrantのボックスの仕様
 
-Vagrantでは、Vagrantbox.es ^[[https://www.vagrantbox.es/](https://www.vagrantbox.es/)] でボックスが公開されていますが、ボックスの構成の仕様は明文化されていないものもあります。
+Vagrantでは、Vagrantbox.es ([https://www.vagrantbox.es/](https://www.vagrantbox.es/)) でボックスが公開されていますが、仮想マシンの構成の仕様が明文化されていないboxも存在します。
 
 VagrantのBoxを、Infrastructure as Codeのベースとして使用するには、ボックス内のVMのOSがどのような構成で構築されているかを、厳密に管理する必要があります。
 
@@ -60,7 +67,7 @@ VagrantのBoxを、Infrastructure as Codeのベースとして使用するには
 
 VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開されています。
 
-- [https://www.vagrantup.com/docs/boxes/base.html]https://www.vagrantup.com/docs/boxes/base.html
+- [https://www.vagrantup.com/docs/boxes/base.html](https://www.vagrantup.com/docs/boxes/base.html
 
 主な仕様は、次の通りです。
 
@@ -85,18 +92,18 @@ VagrantのBoxには、動作するVirtualBoxのバージョンに応じたVBoxGu
 VirtualBoxのバージョンアップにVagrantのBoxを追従するには、vagrant-vbguestの`vagrant vbguest`コマンドでVBoxGuestAdditionsを更新するか、VBoxGuestAdditionsを更新したVagrantのBoxを作成するかのいずれかになります。
 
 また、VirutalBoxのバージョンアップ時に、ゲストOSのパッケージの更新が行われていない状態だと、
-VboxguestAdditionのビルド時に必要な、Linux Kernelの開発者向けのパッケージ ^[RPMだとkernel-devel]がインストールできず、VboxguestAdditionの更新に失敗する場合があります。この場合はVboxguestAdditionの更新の前に、ゲストOSのシステムを更新する必要があります。
+VboxguestAdditionのビルド時に必要な、RPMだとkernel-develのような、Linux Kernelの開発者向けのパッケージがインストールできず、VboxguestAdditionの更新に失敗する場合があります。この場合はVboxguestAdditionの更新の前に、ゲストOSのシステムを更新する必要があります。
 
 これらの問題を踏まえて、開発の現場でVagrantを用いたローカル開発環境の運用を継続的に行うためには、
 この本で取り上げるPackerを使用して、ボックスの更新とその配付の仕組みを作り込む必要があります。
 
 ## PackerとBoxCutterによるベースイメージの作成
 
-Packerを使用して、Vagnrantなどの仮想環境でのOSをセットアップする手順をテンプレート化したプロダクトがBoxcutterです。BoxcutterはGitHubで公開 ^[[https://github.com/boxcutter](https://github.com/boxcutter)] されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
+Packerを使用して、Vagnrantなどの仮想環境でのOSをセットアップする手順をテンプレート化したプロダクトがBoxcutterです。BoxcutterはGitHubでオープンソース(Apache License 2.0)で公開 ([https://github.com/boxcutter](https://github.com/boxcutter)) されています。BoxCutterはChef社出身で、現在はAppleで自動化に関わるエンジニアであるMischa Taylor氏が中心となってメンテナンスしています。
 
 ## Packer
 
-Packerは複数プラットフォームの仮想マシンのイメージ構築をコード化するプロダクトです。Hashicorpによって開発され、オープンソースで公開されています。
+Packerは複数プラットフォームの仮想マシンのイメージ構築をコード化するプロダクトです。Hashicorpによって開発され、オープンソース(Mozilla Public License 2.0)で公開されています。
 
 ## Packerの導入
 
@@ -104,9 +111,9 @@ PackerはGoで開発されており、単一バイナリーで提供されてい
 
 ## /usr/sbin/packerとのpackerコマンドの衝突
 
-パスワード強度チェックツールのcracklib ^[[https://github.com/cracklib/cracklib](https://github.com/cracklib/cracklib)] のRPMパッケージには、`/usr/sbin/packer` という `cracklib-packer` コマンドへのシンボリックリンクが存在します。環境変数`PATH`の参照順序によっては、`packer` コマンドの呼び出し時にcracklibの`packer`コマンドが呼び出されることがあります。
+パスワード強度チェックツールのcracklib ([https://github.com/cracklib/cracklib](https://github.com/cracklib/cracklib)) のRPMパッケージには、`/usr/sbin/packer` という `cracklib-packer` コマンドへのシンボリックリンクが存在します。環境変数`PATH`の参照順序によっては、`packer` コマンドの呼び出し時にcracklibの`packer`コマンドが呼び出されることがあります。
 
-対処としては、`packer`コマンドの`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。
+対処としては、環境変数の`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。
 
 ## Boxcutterの設定ファイル
 
@@ -153,7 +160,7 @@ Vagrantには、プロビジョニングの仕組みの中でChefやAnsibleな�
 
 しかし、Vagrantによるプロビジョニング処理の実行は、実際にサーバーをセットアップする時と異なるインターフェースやパラメーターで処理を行う事になり、実機のセットアップ時に落としていた問題が発生しがちです。
 
-Vagrantによるプロビジョニングと、実機のプロビジョニングで、構成を揃えるためには、VagrantのShell Provisioner ^[[https://www.vagrantup.com/docs/provisioning/shell.html](https://www.vagrantup.com/docs/provisioning/shell.html)] の仕組みを使用し、Vagrantから実行するときの実機で実行するときで、同一のシェルスクリプトを実行するようにします。
+Vagrantによるプロビジョニングと、実機のプロビジョニングで、構成を揃えるためには、VagrantのShell Provisioner ([https://www.vagrantup.com/docs/provisioning/shell.html](https://www.vagrantup.com/docs/provisioning/shell.html)) の仕組みを使用し、Vagrantから実行するときの実機で実行するときで、同一のシェルスクリプトを実行するようにします。
 
 
 VagrantのShell Provisionerを実行する際、Vagrantfileで指定したスクリプトは`/tmp`にアップロードされて実行されます。デフォルトだとAnsibleのplaybookを格納したワークスペースはゲストOSの`/vagrant`配下にマウントされています。シェルスクリプト上からプロビジョニングツールを実行する場合は、Vagrantから実行する場合に限り[@lst:code_020_code080]の`provisioning-vagrant.sh`の処理内でカレントディレクトリーを`/vagrant`に切り替えて実行します。実機でのプロビジョニング時は、[@lst:code_020_code090]の`provisioning.sh`の処理内で、実行するスクリプトのあるディレクトリー上にカレントディレクトリーを切り替えて実行します。
@@ -169,7 +176,8 @@ yum -y install ansible
 CURRENT=$(cd $(dirname $0) && pwd)
 cd $CURRENT
 
-PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook --limit="default" --inventory-file=localhost -v provision/localhost.yml
+PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook \
+  --limit="default" --inventory-file=localhost -v provision/localhost.yml
 ```
 
 
@@ -188,11 +196,11 @@ Packerで作成したボックスを開発チームに配布するには、ボ�
 配置し、そのURLをVagrantfileの`vm.box_url`に指定します。([@lst:code_020_code110] )
 
 ```{#lst:code_020_code110 caption="vm.box_urlの指定"}
- vm.box_url="http://images.fieldnotes.jp/images/centos7-7.5.1804-1.box"
+ vm.box_url="http://manage.fieldnotes.jp/images/centos7-7.5.1804-1.box"
  vm.box = "centos7.5-1804-1"
 ```
 
-Vagrantでは、`vagrant up`の実行時に`vm.box`で指定した名称のboxが存在しない場合、vm.box_urlに指定したURLからboxをダウンロードし、ローカルにインポートします。
+Vagrantでは、`vagrant up`の実行時に`vm.box`で指定した名称のboxが存在しない場合、`vm.box_url` に指定したURLからboxをダウンロードし、ローカルにインポートします。
 
 このため、リモートに配置されているboxが更新された場合は、`Vagrantfile`内の`vm.box`のbox名称も更新し、仮想マシンの作成時に、新しいboxをリモートからダウンロードするようにします。
 
@@ -203,7 +211,11 @@ Vagrantでは、単一のVagrantfileで複数のVM定義を指定することが
 これとAmazon EC2上でVagrantの仮想マシンを起動するプラグインであるvagrant-awsを使って、ローカル環境のVMとパブリッククラウド上の環境を
 切り替えて使用することができます。
 
-vagrant-awsを使用してEC2上に仮想マシンを作成するには、VagrantfileでVMのproviderにawsを指定するとともに、`vagrant up`コマンドでVMを作成する際に`--provider aws`を指定します。
+vagrant-awsを使用してEC2上に仮想マシンを作成するには、VagrantfileでVMのproviderにawsを指定するとともに、[@lst:code_020_code115] のように`vagrant up`コマンドでVMを作成する際に`--provider aws`を指定します。
+
+```{#lst:code_020_code115 caption="vagrant-awsによる仮想マシンの作成"}
+vagrant up remote --provider aws
+```
 
 ブロックの指定の方法
 
@@ -225,15 +237,63 @@ VagrantfileでawsのVMを定義する際に、指定が必要な項目は以下�
 - 秘密鍵のパス
 - `/vagrant`ディレクトリーのrsyncの設定
 
+vagrant-awsでVMをプロビジョニングする場合は、リソースの転送にrsyncのコマンドを使用します。
+Windows環境ででrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、環境変数`PATH`の通っているディレクトリーに展開します。([http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz))
+
+##マルチVMの場合のVagrantfileの記述
+
 Vagrantfileのグローバルの設定として、Vagrantのboxのbox_urlを定義している場合は、
 awsのVM定義では、中身が空のボックスである [https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box](https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box)を指定して上書きします。
 
 VMを複数定義した場合、vagrantでは `up`/`halt`/`provision`/`destroy`のコマンドの後ろにVMの名称を
 付けて操作対象を区別します。VMの名称のオプションを付与しないで`vagrant up`等のコマンドを実行した時の
-動作のために、ローカルのVM定義に`primary: true`のオプションを、またAWS上でのVM定義に `autostart: false`オプションを指定します。
+動作のために、[@lst:code_020_code116]のようにローカルのVM定義に`primary: true`のオプションを、またAWS上でのVM定義に `autostart: false`オプションを指定します。
 
-vagrant-awsでVMをプロビジョニングする場合は、リソースの転送にrsyncのコマンドを使用します。
-Windows環境ででrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、環境変数`PATH`の通っているディレクトリーに展開します。^[[http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz)]
+VMを複数指定する場合、`config.vm.define`ブロックのブロック引数
+([@lst:code_020_code116]の場合は`centos`)に、
+仮想マシンのIPアドレスなど、環境ごとの設定を記述します。
+
+[@lst:code_020_code116]の場合、Vagrantfileで`config.vm.network`と指定する箇所は、
+マルチVMでは`centos.vm.network`と指定します。
+
+```{#lst:code_020_code116 caption="ホスト側のマルチVM"}
+  config.vm.define :centos , primary: true do |centos|
+    centos.vm.network "private_network", ip: "192.168.34.2"
+    centos.vm.provision :shell, :path => "provisioning-vagrant.sh"
+  end
+```  
+
+AWSで起動するVMの場合は、[@lst:code_020_code117]の`remote.vm.provider`のブロックの
+第一引数`aws`にAWSのprovider特有の設定を、第二引数`override`に
+上書きする設定を記述します。これによりVagrantfileで`config.vm.box_url`と
+記述する箇所はマルチVMの場合は`override.vm.box_url`と記述しています。
+
+```{#lst:code_020_code117 caption="リモート側のマルチVM"}
+  config.vm.define :remote , autostart: false do |remote|
+    remote.vm.box = "dummy"
+    remote.vm.provider :aws do |aws, override|
+      aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+      aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+      aws.region = 'ap-northeast-1'
+      aws.instance_type = 't2.small'
+      aws.ami = 'ami-8e8847f1'
+      security_group = ENV['security_group']
+      aws.security_groups = [security_group]
+      aws.keypair_name = ENV['keypair_name']
+      aws.ssh_host_attribute = :public_ip_address
+      aws.associate_public_ip = true
+      aws.subnet_id = ENV['subnet_id']
+      override.vm.box_url="https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
+      override.ssh.username = 'centos'
+      override.ssh.private_key_path = ENV['private_key_path']
+      override.vm.synced_folder ".", "/vagrant" , type: "rsync"
+      override.vm.provision :shell, :path => "provisioning-vagrant.sh"  
+      aws.tags = { 'Name' => 'CI' }
+    end
+  end
+``` 
+
+
 
 ## Windows環境にvagrant-awsをインストールするには
 
@@ -247,7 +307,7 @@ Windows環境ででrsyncを使用するには、msys2のレポジトリーから
 > vagrant up --provider aws
 ```
 
-## AMIイメージの指定時にはライセンスの同意が必要
+## AMIイメージの指定のライセンスの同意
 
 AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供されているイメージについては、CLIからの起動するの前に、WebインターフェースからライセンスをSubscribeする必要があります。
 

@@ -1,13 +1,61 @@
-
 # Packerによるアプリケーションイメージ作成
 
 例題はJiraです！
 
 ## Packerの要素
 
-Builder
+PackerではJSONファイルで設定を記述しますが、その中で最も主要な要素がBuilderとProvisionerです。
 
-Provisioner
+## Builder
+
+Builderは、構築する仮想マシンの指定と、VirtualBoxやAmazon EC2など、構築する仮想マシン特有の設定を記述します。[@lst:code_040_code005]は、Amazon EC2でEBS上のAMIイメージを構築する場合のBuilderの指定例です。
+
+```{#lst:code_040_code005 caption="amazon-ebsビルダー"}
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "ap-northeast-1",
+    "source_ami": "{{user `source_ami`}}",
+    "instance_type": "t2.medium",
+    "ssh_username": "centos",
+    "ami_name": "jira-7.12.0-base {{timestamp}}"
+  }],
+```
+
+## Provisioner
+
+Provisonerは、AnsibleやChef、そしてシェルスクリプトなど、プロビジョニングツールの実行の設定を記述します。
+
+[@lst:code_040_code006]、はShell Provisionerと連携して、サーバーのプロビジョニングを行う設定の例です。
+
+
+```{#lst:code_040_code006 caption="Shellプロビジョナー"}
+  "provisioners": [
+ (略)
+    {
+      "environment_vars": [
+        "SSH_USERNAME={{user `ssh_username`}}",
+        "SSH_PASSWORD={{user `ssh_password`}}",
+        "http_proxy={{user `http_proxy`}}",
+        "https_proxy={{user `https_proxy`}}",
+        "ftp_proxy={{user `ftp_proxy`}}",
+        "rsync_proxy={{user `rsync_proxy`}}",
+        "no_proxy={{user `no_proxy`}}",
+        "TARGET_NODE={{user `target_node`}}"
+      ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts": [
+        "provisioning-packer.sh",
+        "spec.sh"
+      ],
+      "type": "shell",
+      "pause_before": "10s"
+    }
+  ],
+(以下略)
+  }
+  ```
 
 ## Packerによるアプリケーションイメージのビルド
 
