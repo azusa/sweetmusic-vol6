@@ -27,7 +27,7 @@ Builderは、構築する仮想マシンの指定と、VirtualBoxやAmazon EC2�
 
 Provisonerは、AnsibleやChef、そしてシェルスクリプトなど、プロビジョニングツールの実行の設定を記述します。
 
-[@lst:code_040_code006]、はShell Provisionerと連携して、サーバーのプロビジョニングを行う設定の例です。
+[@lst:code_040_code006]は、Shell Provisionerと連携して、サーバーのプロビジョニングを行う設定の例です。
 
 
 ```{#lst:code_040_code006 caption="Shellプロビジョナー"}
@@ -55,15 +55,11 @@ Provisonerは、AnsibleやChef、そしてシェルスクリプトなど、プ�
   ],
 (以下略)
   }
-  ```
-
-## Packerによるアプリケーションイメージのビルド
-
-## builderの指定
+```
 
 ## ワークスペースの転送
 
-この機能を使い、プロビジョニング処理を対象ホスト上で実行するには、テンプレートファイルが存在するワークスペース以下のファイルを対象ホストに転送する必要があります。
+PackerのShellプロビジョナーの機能を使い、プロビジョニング処理を対象ホスト上で実行するには、テンプレートファイルが存在するワークスペース以下のファイルを対象ホストに転送する必要があります。
 
 Packerでは、プロビジョニング処理の先頭にfileプロビジョナーを使用してリソースの転送を行う事ができます。([@lst:code_040_code010])
 
@@ -146,7 +142,7 @@ rsync -a ${CURRENT}/local-mode-cache/backup/ /var/local/backup/chef/${DATE}/
 ## 環境ごとのイメージだし分け
 
 Herokuの創設者であり、現在はInk & Switch社のCEOであるAdam Wiggins氏が
-記したThe Twelve-Factor Appというドキュメントがあります。このドキュメントは、可搬性とスケーラビリティーに優れたWebアプリケーションのための方法論についてまとめたものです。この中で「設定を環境変数に格納する」という節があります。
+記したThe Twelve-Factor Appというドキュメントがあります。([https://12factor.net/](https://12factor.net/))このドキュメントは、可搬性とスケーラビリティーに優れたWebアプリケーションのための方法論についてまとめたものです。この中で「設定を環境変数に格納する」という節があります。
 
 設定を環境変数に格納するということは、アプリケーションのソースコードやミドルウェアの設定ファイル中から環境依存の要素を排除し、ステージング環境や本番環境などのシステムのステージ、顧客ごとの設定の際に関わりなく、単一のアプリケーションのパッケージを、あらゆる環境で動作させることを目指しています。
 
@@ -182,7 +178,7 @@ OSのベースイメージからアプリケーションの基本設定ずみイ
 ```{#lst:code_040_code050 caption="PackerでのイメージのID取り出し"}
 /usr/local/bin/packer build -machine-readable jira-ami.json |tee jira-build.log
 RET=$?
-grep 'artifact,0,id' jira/jira-build.log | cut -d, -f6 | cut -d: -f2 jira.version
+grep 'artifact,0,id' jira-build.log | cut -d, -f6 | cut -d: -f2 >jira.version
 exit $RET
 ```
 
@@ -190,7 +186,7 @@ exit $RET
 環境変数として設定し、[@lst:code_040_code070]のようにテンプレート内でユーザー変数として取得します。
 
 ```{#lst:code_040_code060 caption="PackerでのイメージのID取りこみ"}
-export SOURCE_AMI=$(<jira/jira.version)
+export SOURCE_AMI=$(<jira.version)
 export TARGET_NODE="production"
 
 /usr/local/bin/packer build jira-custom.json
@@ -230,5 +226,5 @@ export TARGET_NODE="production"
 *.rpm filter=lfs diff=lfs merge=lfs -text
 ```
 
-## AMIイメージからのインスタンス作成
+
 

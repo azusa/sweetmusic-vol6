@@ -80,6 +80,27 @@ div.listing {
     font-size: 14px;
 }
 
+/* 中表紙用 */
+#cover #title1 {
+    font-family: SourceHanSansJP;
+    font-size:9pt;
+}
+#cover #title2 {
+    font-family: SourceHanSansJP;
+    font-size:14.5pt;
+}
+
+#author p {
+    font-family: SourceHanSansJP;
+    font: size 12pt;
+}
+
+table#author {
+    position: fixed;
+    top: 800px;
+    left: 400px;
+}
+
 @font-face {
     font-family: SourceHanSerifJP;
     src: url(SourceHanSerif-Regular.otf) format('opentype')

@@ -11,7 +11,7 @@ Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置し
 
 
 
-## バージョン管理からVagrantfileを取得して仮想マシンを作成する
+## バージョン管理からのVagrantfileを取得と仮想マシンの作成
 
 以下に本書のサンプルコード[[https://github.com/azusa/techbookfest5-vagrant](https://github.com/azusa/techbookfest5-vagrant)]から`Vagrantfile`を取得し、
 仮想マシンを構築する手順を示します。なお本章ではこの後、このサンプルコードに
@@ -138,7 +138,7 @@ packer build -only=virtualbox-iso -var-file=centos7.json centos.json
 
 ## boxcutterのビルドの高速化
 
-Packerはビルド時に、OSのインストールイメージとなるisoファイルを初回のビルドにダウンロードします。テンプレート内で指定されている`mirros.sonic.net`は日本国内にエッジサーバーが存在しないため、デフォルトの指定ではisoファイルのダウンロードに時間がかかります。
+Packerは、OSのインストールのためのisoファイルを初回のビルドにダウンロードします。テンプレート内で指定されている`mirros.sonic.net`は日本国内にエッジサーバーが存在しないため、デフォルトの指定ではisoファイルのダウンロードに時間がかかります。
 
 ダウンロードを高速化するためには、変数指定されている`centos7.json`ないし`centos6.json`内の`iso_url`ならびに`iso_checksum`の項目を日本国内のミラーサイトのURLならびにチェックサムに修正します。([@lst:code_020_code070])
 
@@ -225,7 +225,7 @@ VagrantfileでawsのVMを定義する際に、指定が必要な項目は以下�
 - シークレットアクセスキー
 - リージョン
 - インスタンスタイプ
-- AMIID
+- AMIのID
 - セキュリティーグループ
 - キーペア
 - パブリックIPを割り振る指定
