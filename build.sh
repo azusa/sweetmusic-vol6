@@ -36,7 +36,9 @@ cd ../
 
 RET=$?
 
+mkdir -p target/img
 cp -f src/*.css src/*.otf src/*.ttf target/
+cp -f src/img/* target/img
 
 set +e
 /opt/redpen-distribution-1.9.0/bin/redpen -c redpen-config.xml -f markdown src/*.md |tee target/${OUTPUT}.txt
