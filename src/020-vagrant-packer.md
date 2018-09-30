@@ -4,16 +4,17 @@
 
 Vagrantは、開発環境の用途として仮想マシンを構築し、管理するためのミドルウェアです。 
 Mitchell Hashimoto氏がオープンソース(MIT License)で開発し、彼とArmon Dadgar氏が
-創立したHashiCorp社によってサポートが行われています
+創立したHashiCorp社によってサポートが行われています。
 
 Vagrantでは、`Vagrantfile`というファイルに仮想マシンを配置します。`Vagrantfile`はRubyの文法で
-記述する設定ファイルです。通常インフラ自動化においてVagrantを使用する場合は、Vagrantfileの配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
+記述する設定ファイルです。通常インフラ自動化においてVagrantを使用する場合は、`Vagrantfile`の配下のディレクトリーに、プロビジョニングに必要なスクリプト等を格納します。
 
 
 
 ## バージョン管理からのVagrantfileを取得と仮想マシンの作成
 
-以下に本書のサンプルコード[[https://github.com/azusa/techbookfest5-vagrant](https://github.com/azusa/techbookfest5-vagrant)]から`Vagrantfile`を取得し、
+以下に本書のサンプルコード([https://github.com/azusa/techbookfest5-vagrant](https://github.com/azusa/techbookfest5-vagrant))から`Vagrantfile`を取得し、
+VirtualBox上にAnsibleを用いてサーバーサイド開発のベースとなる
 仮想マシンを構築する手順を示します。なお本章ではこの後、このサンプルコードに
 従って説明を進めます。
 
@@ -46,7 +47,7 @@ vagrant halt
 
 VMを破棄する場合は`vagrant destroy`コマンドを実行します。([@lst:code_020_code050])
 
-```{#lst:code_020_code050 caption="vagrant reload / vagrant halt"}
+```{#lst:code_020_code050 caption="vagrant destroy"}
 vagrant destroy
 ```
 
@@ -67,7 +68,7 @@ VagrantのBoxを、Infrastructure as Codeのベースとして使用するには
 
 VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開されています。
 
-- [https://www.vagrantup.com/docs/boxes/base.html](https://www.vagrantup.com/docs/boxes/base.html
+- [https://www.vagrantup.com/docs/boxes/base.html](https://www.vagrantup.com/docs/boxes/base.html)
 
 主な仕様は、次の通りです。
 
@@ -79,7 +80,7 @@ VagrantのBoxを作成するにあたっての仕様は、以下のURLで公開�
 
 Vagrantのボックス作成はVirtualBox等の仮想マシンで手動でOSをセットアップした後、`vagrant package` コマンドで仮想マシンのイメージをエクスポートすることでも行えますが、`vagrant package`コマンドを使用した場合はOSのアップデートごとに手動の作業を繰り返すことになります。
 
-### Windows10とVirtualboxとVagrantの微妙な関係
+### Windows10とVirtualBoxとVagrantの微妙な関係
 
 VagrantのBoxには、動作するVirtualBoxのバージョンに応じたVBoxGuestAdditionsが仮想マシン上のゲストOSにインストールされている必要があります。
 
@@ -115,7 +116,7 @@ PackerはGoで開発されており、単一バイナリーで提供されてい
 
 対処としては、環境変数の`PATH`の設定で、`Packer`の`packer`コマンドが先に呼び出されるようにするか、フルパスで`packer`コマンドを実行する必要があります。
 
-## Boxcutterの設定ファイル
+## BoxCutterの設定ファイル
 
 Packerは、構成のテンプレートをjson形式で記述します。boxcutterでは、`centos.json`です。
 
@@ -158,7 +159,7 @@ Packerは、OSのインストールのためのisoファイルを初回のビル
 
 Vagrantには、プロビジョニングの仕組みの中でChefやAnsibleなど、プロビジョニングツールと連携する仕組みがあり、Vagrantによる仮想マシンの起動時にプロビジョニングの処理を実行することができます。
 
-しかし、Vagrantによるプロビジョニング処理の実行は、実際にサーバーをセットアップする時と異なるインターフェースやパラメーターで処理を行う事になり、実機のセットアップ時に落としていた問題が発生しがちです。
+しかし、Vagrantによるプロビジョニング処理の実行は、実際にサーバーをセットアップする時と異なるインターフェースやパラメーターで処理を行う事になり、実機のセットアップ時に見落としていた問題が発生しがちです。
 
 Vagrantによるプロビジョニングと、実機のプロビジョニングで、構成を揃えるためには、VagrantのShell Provisioner ([https://www.vagrantup.com/docs/provisioning/shell.html](https://www.vagrantup.com/docs/provisioning/shell.html)) の仕組みを使用し、Vagrantから実行するときの実機で実行するときで、同一のシェルスクリプトを実行するようにします。
 
@@ -181,9 +182,9 @@ PYTHONUNBUFFERED=1 ANSIBLE_FORCE_COLOR=true ansible-playbook \
 ```
 
 
-なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにチェックアウトした環境上でシェルスクリプトの改行コードが`LF`になっている必要があります。
+なお、Windows上で実行するVagrantでShell Provisionerを使用してシェルスクリプトを実行する場合は、ローカルにバージョン管理システムからチェックアウトした環境上で、シェルスクリプトの改行コードが`LF`になっている必要があります。
 
-Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、[@lst:code_020_code100]の`.gitattributes`で改行コードを`LF`としてチェックアウトするよう設定します。
+Git for Windowsのデフォルト設定では改行コードを`CRLF`に変換するようになっているため、[@lst:code_020_code100]の`.gitattributes`で改行コードを`LF`としてチェックアウトするように設定します。
 
 ```{#lst:code_020_code100 caption=".gitattributes"}
 * eol=lf
@@ -208,7 +209,7 @@ Vagrantでは、`vagrant up`の実行時に`vm.box`で指定した名称のbox�
 
 Vagrantでは、単一のVagrantfileで複数のVM定義を指定することができます。
 
-これとAmazon EC2上でVagrantの仮想マシンを起動するプラグインであるvagrant-awsを使って、ローカル環境のVMとパブリッククラウド上の環境を
+これとAmazon EC2上でVagrantの仮想マシンを起動するプラグインであるvagrant-aws([https://github.com/mitchellh/vagrant-aws](https://github.com/mitchellh/vagrant-aws))を使って、ローカル環境のVMとパブリッククラウド上の環境を
 切り替えて使用することができます。
 
 vagrant-awsを使用してEC2上に仮想マシンを作成するには、VagrantfileでVMのproviderにawsを指定するとともに、[@lst:code_020_code115] のように`vagrant up`コマンドでVMを作成する際に`--provider aws`を指定します。
@@ -238,7 +239,7 @@ VagrantfileでawsのVMを定義する際に、指定が必要な項目は以下�
 - `/vagrant`ディレクトリーのrsyncの設定
 
 vagrant-awsでVMをプロビジョニングする場合は、リソースの転送にrsyncのコマンドを使用します。
-Windows環境ででrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、環境変数`PATH`の通っているディレクトリーに展開します。([http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz))
+Windows環境でrsyncを使用するには、msys2のレポジトリーからアーカイブを入手し、環境変数`PATH`の通っているディレクトリーに展開します。([http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz](http://repo.msys2.org/msys/x86_64/rsync-3.1.3-1-x86_64.pkg.tar.xz))
 
 ##マルチVMの場合のVagrantfileの記述
 
@@ -299,7 +300,7 @@ AWSで起動するVMの場合は、[@lst:code_020_code117]の`remote.vm.provider
 
 この章の執筆時点で(2018/9/20)、Windows環境でvagrant-awsをインストールするには、libxml2の依存関係の導入に失敗してインストールが出来ない問題があります。
 
-この問題はGitHubのIssueにあげられていますが、^[[[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)] この問題に対処するには、vagrant-awsのインストール前に[@lst:code_020_code120]のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします。()
+この問題はGitHubのIssue([https://github.com/mitchellh/vagrant-aws/issues/539](https://github.com/mitchellh/vagrant-aws/issues/539))にあげられていますが、 この問題に対処するには、vagrant-awsのインストール前に[@lst:code_020_code120]のコマンドでfog-ovirtをインストールし、その後vagrant-awsをインストールします([[https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794](https://github.com/mitchellh/vagrant-aws/issues/539#issuecomment-398100794)])。
 
 ```{#lst:code_020_code120 caption="Windows環境でのvagrant-awsのインストール"}
 > vagrant plugin install --plugin-version 1.0.1 fog-ovirt
@@ -309,7 +310,7 @@ AWSで起動するVMの場合は、[@lst:code_020_code117]の`remote.vm.provider
 
 ## AMIイメージの指定のライセンスの同意
 
-AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供されているイメージについては、CLIからの起動するの前に、WebインターフェースからライセンスをSubscribeする必要があります。
+AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供されているイメージについては、CLIからの起動する前に、WebインターフェースからライセンスをSubscribeする必要があります。
 
 またVagrantfile内で指定するAMIのIdは、Subscribeした後の「Configure this software」の画面上で取得することができます。
 
@@ -317,7 +318,7 @@ AWSで提供されているAMIイメージのうち、AWS Marketplaceで提供�
 
 VagrantはVagrantfileの存在するディレクトリーをゲストOS上の`/vagrant`としてマウントします。しかしでホストOS上のディレクトリーを`vboxsf`でマウントする場合、マウントしたディレクトリー上ではシンボリックリンクの設定やパーミッションに変更をできないため、ディレクトリー配下で、ソフトウェアのビルドを行うとエラーとなる場合があります。
 
-これを回避するためには、VagrantやPackerのプロビジョニング処理によるビルド処理の際に、ビルドを`/tmp`などのゲストOS内のディレクトリーで行うようにします。
+これを回避するためには、VagrantやPackerのプロビジョニング処理によるビルド処理の際に、ビルド時のカレントディレクトリーを`/tmp`などのゲストOS内にするようにします。
 
 
 

@@ -1,6 +1,10 @@
-# Packerによるアプリケーションイメージ作成
+# Packerによる仮想マシンイメージ作成
 
-例題はJiraです！
+この章では、アトラシアン社の課題管理システムであるJira Software(以降JIra)のサーバーをVagrantならびにPackerで構築するサンプルコードを題材として、Packerによる仮想マシンのイメージ構築の例について述べます。ローカルの仮想環境にはVirtualBox、クラウド環境にはAmazon EC2(以下EC2)、プロビジョニングツールにはChefを使用します。
+
+サンプルコードは以下で公開されています。
+
+- [https://github.com/azusa/techbookfest5-packer](https://github.com/azusa/techbookfest5-packer)
 
 ## Packerの要素
 
@@ -8,7 +12,7 @@ PackerではJSONファイルで設定を記述しますが、その中で最も�
 
 ## Builder
 
-Builderは、構築する仮想マシンの指定と、VirtualBoxやAmazon EC2など、構築する仮想マシン特有の設定を記述します。[@lst:code_040_code005]は、Amazon EC2でEBS上のAMIイメージを構築する場合のBuilderの指定例です。
+Builderは、構築する仮想マシンの指定と、VirtualBoxやEC2など、構築する仮想マシン特有の設定を記述します。[@lst:code_040_code005]は、Amazon EC2でEBS上のAMIイメージを構築する場合のBuilderの指定例です。
 
 ```{#lst:code_040_code005 caption="amazon-ebsビルダー"}
   "builders": [{
@@ -148,11 +152,11 @@ Herokuの創設者であり、現在はInk & Switch社のCEOであるAdam Wiggin
 
 しかし、アーキテクチャーとして可搬性を意識したミドルウェアやフレームワークの場合はいいのですが、Javaで記述されたアプリケーションのように、設定ファイルをXMLファイルやプロパティファイル形式で記述しているものや、ネットワーク通信の動作のために`hosts`にエントリーを追加する必要があるものなど、環境変数だけでの設定が不可能なアプリケーションやミドルウェアというものはどうしても存在します。
 
-## ユーザデータをシンプルに保つ
+## ユーザーデータをシンプルに保つ
 
-ec2には、ユーザーデータを使って、起動時に実行するスクリプトを指定できます。このスクリプト内で、サーバーのプロビジョニングを行う事ができます。サーバーの構成に環境ごとに差分がある場合は、ユーザーデータの処理内で、設定ファイルの差し替えなど、環境のカスタマイズを行う事が可能です。
+EC2には、ユーザーデータを使って、起動時に実行するスクリプトを指定できます。このスクリプト内で、サーバーのプロビジョニングを行う事ができます。サーバーの構成に環境ごとに差分がある場合は、ユーザーデータの処理内で、設定ファイルの差し替えなど、環境のカスタマイズを行う事が可能です。
 
-しかしユーザーデータのスクリプトには、プロビジョニングツールなど、他のサーバー構築の仕組みでカバーしきれない処理が集中しがちであり、肥大化しがちです。また、ユーザーデータのスクリプトのデバッグを確実に行うためにはec2のインスタンスを作成する必要があり、ユーザデータが肥大化すると、スクリプトのデバッグが難しくなってきます。
+しかしユーザーデータのスクリプトには、プロビジョニングツールなど、他のサーバー構築の仕組みでカバーしきれない処理が集中しがちであり、肥大化しがちです。また、ユーザーデータのスクリプトのデバッグを行うためにはEC2のインスタンスを作成する必要があり、ユーザーデータが肥大化すると、スクリプトのデバッグが難しくなってきます。
 
 ユーザーデータをどのようにシンプルに保つかと言うことを考えると、
 ユーザーデータの中ではEBSのマウント設定やホスト名の設定など、
@@ -165,7 +169,7 @@ Packerによるプロビジョニング処理内で環境のカスタマイズ�
 環境変数のみで設定が不可能なアプリケーションの存在や、ユーザーデータのスクリプトのシンプルさを保つことを考えると、環境ごとにカスタマイズが必要なアプリケーションのカスタマイズの方法は、以下の通り、デフォルトの構成のイメージ作成と、カスタマイズしたイメージの作成でステージを分割する、というものになります。
 
 - デフォルト設定で構成したアプリケーションのイメージを構成し、Serverspecを用いてテストを行う。
-- テストを行ったデフォルト設定のイメージに対してカスタマイズを行い、環境ごとにイメージを
+- テストを行ったデフォルト設定のイメージに対してカスタマイズを行い、環境ごとにイメージを作成する。
 
 ## 作成したAMIイメージの取得と引き渡し
 
@@ -210,7 +214,7 @@ export TARGET_NODE="production"
   }
 ```
 
-## インストーラーをどこに配置するか
+## ビルド時のインストーラーをどこに配置するか
 
 `yum`や`apt`など、OSのパッケージ管理の仕組みでなく、`tar.gz`等の形式のアーカイブを展開する形式で提供されているパッケージソフトウェアをインストールする際には、Chefでは`remote_file`リソース、Ansibleでは`get_url`の仕組みを作ってリモートからアーカイブを取得します。
 
@@ -225,6 +229,37 @@ export TARGET_NODE="production"
 ```{#lst:code_040_code080 caption=".gitattributes"}
 *.rpm filter=lfs diff=lfs merge=lfs -text
 ```
+
+## Packerビルド時のhostsのカスタマイズ方法
+
+`uname -n`コマンドで取得できる、`localhost`の
+ホスト名が、`/etc/hosts`に設定されているミドルウェアが存在します。代表例はOracle Databaseです。
+
+プロビジョニングツールによるサーバー構築時に、`/etc/hosts`にホスト名を設定するには、以下の様に行います。
+
+Vagrantで構築するhostに関しては、Chef/Itamaeの場合は[@lst:code_040_code090]のように、Rubyの`Socket::gethostname`を使用して、erbテンプレートにホスト名を設定します。
+
+```{#lst:code_040_code090 caption="hosts.erb"}
+127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4 <%= Socket::gethostname %>
+::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+```
+
+Packerで構築するイメージについては、ホスト名が設定されるのがイメージ構築の後ですので、[@lst:code_040_code100]のようにerbテンプートには、ホスト名を直接記述し、[@lst:code_040_code110]のようにユーザーデータの起動スクリプト内で、引数として渡されたホスト名を設定します。
+
+```{#lst:code_040_code100 caption="hosts.erb"}
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 atls-production-jira
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+```
+
+```{#lst:code_040_code110 caption="user-data.sh(抜粋)"}
+(前略)
+# 静的ホスト名の設定
+hostnamectl set-hostname --static $1
+
+echo "preserve_hostname: true" >> /etc/cloud/cloud.cfg
+
+```
+
 
 
 

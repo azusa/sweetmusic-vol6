@@ -5,21 +5,13 @@
     }
 }
 
-div#cover h1 {
-    break-before: unset;
+
+div#TOC {
+    break-before:  page;
 }
 
-
-div#cover {
-    break-after:  page;
-}
-
-div#footnote {
+div#imprint {
     break-before: page;
-}
-
-div#footnote h1 {
-    break-before: unset;
 }
 
 
@@ -27,9 +19,33 @@ h1 {
     break-before: page;
 }
 
+/* 本文 */
 h1,h2,h3 {
     font-family: SourceHanSansJP;
 }
+
+h1 {
+    font-size: 18pt;
+}
+
+h2 {
+    font-size: 14pt;
+}
+
+p a {
+    font-family: RictyDimished;
+    color: black;
+    text-decoration: none;
+    border-bottom: dotted 2px black;
+}
+
+li a {
+    font-family: RictyDimished;
+    color: black;
+    text-decoration: none;
+    border-bottom: dotted 2px black;
+}
+
 
 p {
     font-family: SourceHanSerifJP;
@@ -46,7 +62,7 @@ li code {
     font-size: 11px;
 }
 
-
+/* コードブロック */
 p code {
     font-family: RictyDimished;
     font-size: 12px;
@@ -65,11 +81,13 @@ div.listing p {
 }
 
 div.listing {
-    margin: 0 0 0 1em;
-    padding: 0.5em 1em;
+    margin: 0 0 0 0.5em;
+    padding: 0.5em 0.5em;
     border-left: solid 2px #000000;
 }
 
+
+/* 目次 */
 #TOC a::after {
     content: target-counter(attr(href), page);
     float: right;
@@ -80,7 +98,7 @@ div.listing {
     font-size: 14px;
 }
 
-/* 中表紙用 */
+/* 中表紙 */
 #cover #title1 {
     font-family: SourceHanSansJP;
     font-size:9pt;
@@ -99,6 +117,27 @@ table#author {
     position: fixed;
     top: 800px;
     left: 400px;
+}
+
+/* 奥付 */
+div#imprint{
+    position: absolute;
+    top: 500px;
+    width: 500px;
+}
+
+div#imprint h2 {
+    font-size: 12pt;
+    text-align: center;
+}
+
+div#imprint table {
+    font-size: 10pt;
+}
+
+td.key {
+    -moz-text-align-last: justify;
+    text-align-last: justify;
 }
 
 @font-face {
