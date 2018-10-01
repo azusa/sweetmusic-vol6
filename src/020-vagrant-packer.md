@@ -309,16 +309,14 @@ AWSで起動するVMの場合は、[@lst:code_020_code117]の`remote.vm.provider
 
 ## AMIイメージの指定時のライセンスの同意について
 
-AWSで提供されているAMIイメージのうち、AWS Marketplace([https://aws.amazon.com/marketplace](https://aws.amazon.com/marketplace)で提供されているイメージについては、CLIからの起動する前に、WebインターフェースからライセンスをSubscribeする必要があります。
+AWSで提供されているAMIイメージのうち、AWS Marketplace([https://aws.amazon.com/marketplace](https://aws.amazon.com/marketplace)で提供されているイメージについては、CLIからの起動する前に、WebインターフェースからライセンスをSubscribeする必要があります。ライセンスをSubscribeするには、AWS MarketplaceのそれぞれのOSの画面[@fig:img_020_020]の「Continue to Subscribe」のボタンを選択し、ライセンスを確認して[@fig:img_020_030]の画面の「Accept Terms」を選択します。
 
-ライセンスをSubscribeするには、AWS MarketplaceのそれぞれのOSの画面[@fig:img_020_020]の「Continue to Subscribe」のボタンを選択し、ライセンスを確認して[@fig:img_020_030]の画面の「Accept Terms」を選択します。
+またVagrantfile内で指定するAMIのIdは、Subscribeした後「Continue to Configuration」のボタンを押して遷移する「Configure this software」の画面上で取得することができます。([@fig:img_020_050])
+
 
 ![「Continue to Subscribe」画面](img/img-020-020.png){#fig:img_020_020}
 
-![「Continue to Subscribe」画面](img/img-020-030.png){#fig:img_020_030}
-
-
-またVagrantfile内で指定するAMIのIdは、Subscribeした後「Continue to Configuration」のボタンを押して遷移する「Configure this software」の画面上で取得することができます。([@fig:img_020_050])
+![「SubScribe to this software」画面](img/img-020-030.png){#fig:img_020_030}
 
 ![「Configure this software」画面](img/img-020-050.png){#fig:img_020_050}
 

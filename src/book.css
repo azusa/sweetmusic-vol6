@@ -21,7 +21,7 @@ h1 {
 
 /* 本文 */
 h1,h2,h3 {
-    font-family: SourceHanSansJP;
+    font-family: "源ノ角ゴシック Code JP N";
 }
 
 h1 {
@@ -29,18 +29,19 @@ h1 {
 }
 
 h2 {
-    font-size: 14pt;
+    font-size: 16pt;
 }
 
 p a {
-    font-family: RictyDimished;
+    font-family: "Ricty Diminished";
     color: black;
     text-decoration: none;
     border-bottom: dotted 2px black;
+    font-size: 12px;
 }
 
 li a {
-    font-family: RictyDimished;
+    font-family: "Ricty Diminished";
     color: black;
     text-decoration: none;
     border-bottom: dotted 2px black;
@@ -48,17 +49,17 @@ li a {
 
 
 p {
-    font-family: SourceHanSerifJP;
+    font-family: "Source Han Serif";
     font-size: 12px;
 }
 
 li {
-    font-family: SourceHanSerifJP;
+    font-family: "Source Han Serif";
     font-size: 12px;
 }
 
 li code {
-    font-family: RictyDimished;
+    font-family: "Ricty Diminished";
     font-size: 11px;
 }
 
@@ -69,24 +70,30 @@ img {
 
 /* コードブロック */
 p code {
-    font-family: RictyDimished;
-    font-size: 12px;
-}
-
-pre code {
-    font-family: RictyDimished;
+    font-family: "Ricty Diminished";
     font-size: 11px;
 }
 
+code  {
+    font-family: "Ricty Diminished";
+    font-size: 11px;
+}
+
+
+pre  {
+    font-family: "Ricty Diminished";
+    font-size: 12px;
+}
+
 div.listing p {
-    font-family: SourceHanSansJP;
+    font-family: "源ノ角ゴシック Code JP N";
     font-size: 11px;
     margin: 0; 
     padding: 0;
 }
 
 div.listing {
-    margin: 0 0 0 0.5em;
+    margin: 1.5em 1.5em 0 0.5em;
     padding: 0.5em 0.5em;
     border-left: solid 2px #000000;
 }
@@ -99,22 +106,22 @@ div.listing {
 }
 
 #TOC ul li {
-    font-family: SourceHanSansJP;
+    font-family: "源ノ角ゴシック Code JP N";
     font-size: 14px;
 }
 
 /* 中表紙 */
-#cover #title1 {
-    font-family: SourceHanSansJP;
+h2#title1 {
+    font-family: "源ノ角ゴシック Code JP N" !important;
     font-size:9pt;
 }
-#cover #title2 {
-    font-family: SourceHanSansJP;
-    font-size:14.5pt;
+h2#title2 {
+    font-family: "源ノ角ゴシック Code JP N" !important;
+    font-size: 14pt;
 }
 
 #author p {
-    font-family: SourceHanSansJP;
+    font-family: "源ノ角ゴシック Code JP N";
     font: size 12pt;
 }
 
@@ -145,19 +152,22 @@ td.key {
     text-align-last: justify;
 }
 
+/*
 @font-face {
-    font-family: SourceHanSerifJP;
-    src: url(SourceHanSerif-Regular.otf) format('opentype')
+    font-family: "Source Han Serif";
+    src: url(SourceHanSerif-Regular.otf) format('truetype')
 }
 
 @font-face {
-    font-family: SourceHanSansJP;
+    font-family: "源ノ角ゴシック Code JP R";
     src: url(SourceHanSans-Normal.otf) format('opentype')
 }
-
+*/
+/*
 @font-face {
-    font-family: RictyDimished;
+    font-family: "Ricty Diminished";
     src: url(RictyDiminished-Regular.ttf) format('truetype')
 }
+*/
 
 
