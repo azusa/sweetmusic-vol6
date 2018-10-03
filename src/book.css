@@ -21,7 +21,7 @@ h1 {
 
 /* 本文 */
 h1,h2,h3 {
-    font-family: "源ノ角ゴシック Code JP N";
+    font-family: "Source Han Code JP N";
 }
 
 h1 {
@@ -86,7 +86,7 @@ pre  {
 }
 
 div.listing p {
-    font-family: "源ノ角ゴシック Code JP N";
+    font-family: "Source Han Code JP N";
     font-size: 11px;
     margin: 0; 
     padding: 0;
@@ -106,22 +106,22 @@ div.listing {
 }
 
 #TOC ul li {
-    font-family: "源ノ角ゴシック Code JP N";
+    font-family: "Source Han Code JP N";
     font-size: 14px;
 }
 
 /* 中表紙 */
 h2#title1 {
-    font-family: "源ノ角ゴシック Code JP N" !important;
+    font-family: "Source Han Code JP N" !important;
     font-size:9pt;
 }
 h2#title2 {
-    font-family: "源ノ角ゴシック Code JP N" !important;
+    font-family: "Source Han Code JP N" !important;
     font-size: 14pt;
 }
 
 #author p {
-    font-family: "源ノ角ゴシック Code JP N";
+    font-family: "Source Han Code JP N";
     font: size 12pt;
 }
 
